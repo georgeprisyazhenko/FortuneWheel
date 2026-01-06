@@ -1,0 +1,373 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabaseClient";
+import { poolForToday, pickRandom, Member } from "@/lib/selection";
+
+type Team = {
+  id: string;
+  name: string;
+  slug: string;
+  last_winner_member_id: string | null;
+};
+
+type PageProps = {
+  params: { slug: string };
+};
+
+export default function TeamPage({ params }: PageProps) {
+  const { slug } = params;
+  const router = useRouter();
+  const [team, setTeam] = useState<Team | null>(null);
+  const [members, setMembers] = useState<Member[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [newMember, setNewMember] = useState("");
+  const [savingName, setSavingName] = useState(false);
+  const [spinning, setSpinning] = useState(false);
+  const [winnerId, setWinnerId] = useState<string | null>(null);
+  const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    const load = async () => {
+      setLoading(true);
+      setError("");
+      try {
+        const { data: teamRow, error: teamErr } = await supabase
+          .from("teams")
+          .select("id,name,slug,last_winner_member_id")
+          .eq("slug", slug)
+          .single();
+        if (teamErr || !teamRow) throw teamErr || new Error("not found");
+        setTeam(teamRow);
+        await refreshMembers(teamRow.id);
+      } catch (e) {
+        console.error(e);
+        setError("Команда не найдена. Создайте новую на главной.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, [slug]);
+
+  const refreshMembers = async (teamId: string) => {
+    const { data, error: mErr } = await supabase
+      .from("members")
+      .select("id,name,vacation")
+      .eq("team_id", teamId)
+      .order("created_at", { ascending: true });
+    if (mErr) {
+      console.error(mErr);
+      setError("Не удалось загрузить участников");
+      return;
+    }
+    setMembers(data || []);
+  };
+
+  const handleAddMember = async () => {
+    if (!team) return;
+    const trimmed = newMember.trim();
+    if (!trimmed) return;
+    const { error: addErr } = await supabase
+      .from("members")
+      .insert({ team_id: team.id, name: trimmed });
+    if (addErr) {
+      console.error(addErr);
+      setError("Не удалось добавить участника");
+      return;
+    }
+    setNewMember("");
+    await refreshMembers(team.id);
+  };
+
+  const handleToggleVacation = async (member: Member, value: boolean) => {
+    const { error: updErr } = await supabase
+      .from("members")
+      .update({ vacation: value })
+      .eq("id", member.id);
+    if (updErr) {
+      console.error(updErr);
+      setError("Не удалось обновить отпуск");
+      return;
+    }
+    if (team) await refreshMembers(team.id);
+  };
+
+  const handleDeleteMember = async (member: Member) => {
+    if (!team) return;
+    const { error: delErr } = await supabase
+      .from("members")
+      .delete()
+      .eq("id", member.id);
+    if (delErr) {
+      console.error(delErr);
+      setError("Не удалось удалить участника");
+      return;
+    }
+    if (team.last_winner_member_id === member.id) {
+      await supabase
+        .from("teams")
+        .update({ last_winner_member_id: null })
+        .eq("id", team.id);
+      setTeam({ ...team, last_winner_member_id: null });
+    }
+    await refreshMembers(team.id);
+  };
+
+  const handleSaveName = async (name: string) => {
+    if (!team) return;
+    const trimmed = name.trim();
+    if (!trimmed || trimmed === team.name) return;
+    setSavingName(true);
+    const { error: updErr } = await supabase
+      .from("teams")
+      .update({ name: trimmed })
+      .eq("id", team.id);
+    if (updErr) {
+      console.error(updErr);
+      setError("Не удалось сохранить название");
+    } else {
+      setTeam({ ...team, name: trimmed });
+    }
+    setSavingName(false);
+  };
+
+  const pool = useMemo(
+    () => poolForToday(members, team?.last_winner_member_id ?? null),
+    [members, team?.last_winner_member_id],
+  );
+
+  const handleSpin = async () => {
+    if (!team) return;
+    if (!pool.length) {
+      setMessage("Добавьте участников");
+      return;
+    }
+    const selected = pickRandom(pool);
+    if (!selected) return;
+    setSpinning(true);
+    setWinnerId(null);
+    setMessage("");
+
+    setTimeout(async () => {
+      setWinnerId(selected.id);
+      setMessage(`Тебе повезло, ${selected.name}! 🎉`);
+      const { error: updErr } = await supabase
+        .from("teams")
+        .update({ last_winner_member_id: selected.id })
+        .eq("id", team.id);
+      if (updErr) {
+        console.error(updErr);
+        setError("Не удалось сохранить результат");
+      } else {
+        setTeam({ ...team, last_winner_member_id: selected.id });
+      }
+      setSpinning(false);
+    }, 2200);
+  };
+
+  if (loading) {
+    return (
+      <main className="flex min-h-screen items-center justify-center">
+        <p>Загрузка...</p>
+      </main>
+    );
+  }
+
+  if (error || !team) {
+    return (
+      <main className="flex min-h-screen flex-col items-center justify-center gap-3">
+        <p className="text-red-600">{error || "Команда не найдена"}</p>
+        <button
+          className="rounded bg-indigo-600 px-4 py-2 text-white"
+          onClick={() => router.push("/")}
+        >
+          На главную
+        </button>
+      </main>
+    );
+  }
+
+  return (
+    <main className="mx-auto flex min-h-screen max-w-6xl flex-col gap-6 px-4 py-8">
+      <header className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <EditableTitle name={team.name} onSave={handleSaveName} saving={savingName} />
+        <button
+          onClick={() => router.push("/")}
+          className="text-sm text-indigo-600 hover:underline"
+        >
+          ← На главную
+        </button>
+      </header>
+
+      <section className="grid gap-6 md:grid-cols-2">
+        <div className="rounded-xl bg-white p-6 shadow">
+          <h3 className="mb-3 text-lg font-semibold">Добавить участника</h3>
+          <div className="flex gap-3">
+            <input
+              value={newMember}
+              onChange={(e) => setNewMember(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleAddMember();
+              }}
+              placeholder="Имя"
+              className="flex-1 rounded border border-slate-200 px-3 py-2 outline-none focus:border-indigo-500"
+            />
+            <button
+              onClick={handleAddMember}
+              className="rounded bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700"
+            >
+              Добавить
+            </button>
+          </div>
+        </div>
+
+        <div className="rounded-xl bg-white p-6 shadow flex flex-col items-center">
+          <h3 className="mb-3 text-lg font-semibold">Колесо фортуны</h3>
+          <FortuneWheel
+            members={pool}
+            spinning={spinning}
+            winnerId={winnerId}
+            lastWinnerId={team.last_winner_member_id}
+          />
+          <button
+            onClick={handleSpin}
+            disabled={spinning}
+            className="mt-4 rounded-full bg-emerald-600 px-6 py-3 text-white text-lg font-semibold shadow hover:bg-emerald-700 disabled:opacity-60"
+          >
+            Ему повезёт
+          </button>
+          {message && <p className="mt-3 text-sm text-emerald-700">{message}</p>}
+        </div>
+      </section>
+
+      <section className="rounded-xl bg-white p-6 shadow">
+        <h3 className="mb-4 text-lg font-semibold">Участники</h3>
+        <div className="space-y-2">
+          {members.map((member) => (
+            <div
+              key={member.id}
+              className="flex items-center justify-between rounded border border-slate-100 px-3 py-2"
+            >
+              <div className="flex items-center gap-3">
+                <input
+                  type="checkbox"
+                  checked={member.vacation}
+                  onChange={(e) => handleToggleVacation(member, e.target.checked)}
+                />
+                <div className="flex flex-col">
+                  <span className="font-medium">{member.name}</span>
+                  {team.last_winner_member_id === member.id && (
+                    <span className="text-xs text-amber-600">Был в прошлый раз</span>
+                  )}
+                </div>
+              </div>
+              <button
+                onClick={() => handleDeleteMember(member)}
+                className="text-sm text-red-600 hover:underline"
+              >
+                Удалить
+              </button>
+            </div>
+          ))}
+          {!members.length && (
+            <p className="text-sm text-slate-500">Пока нет участников.</p>
+          )}
+        </div>
+      </section>
+    </main>
+  );
+}
+
+function EditableTitle({
+  name,
+  onSave,
+  saving,
+}: {
+  name: string;
+  onSave: (value: string) => void;
+  saving: boolean;
+}) {
+  const [value, setValue] = useState(name);
+  return (
+    <div className="flex items-center gap-3">
+      <input
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        onBlur={() => onSave(value)}
+        className="text-2xl font-semibold bg-transparent border-b border-transparent focus:border-indigo-300 outline-none"
+      />
+      {saving && <span className="text-sm text-slate-500">Сохраняем...</span>}
+    </div>
+  );
+}
+
+function FortuneWheel({
+  members,
+  spinning,
+  winnerId,
+  lastWinnerId,
+}: {
+  members: Member[];
+  spinning: boolean;
+  winnerId: string | null;
+  lastWinnerId: string | null;
+}) {
+  const colors = ["#6366f1", "#f59e0b", "#10b981", "#f43f5e", "#06b6d4", "#a855f7"];
+  const gradient = useMemo(() => {
+    if (!members.length) return "conic-gradient(#e2e8f0 0deg 360deg)";
+    const slice = 360 / members.length;
+    const parts = members.map((m, idx) => {
+      const start = idx * slice;
+      const end = (idx + 1) * slice;
+      const color = colors[idx % colors.length];
+      return `${color} ${start}deg ${end}deg`;
+    });
+    return `conic-gradient(${parts.join(",")})`;
+  }, [members, colors]);
+
+  return (
+    <div className="relative flex flex-col items-center">
+      <div
+        className={`relative h-64 w-64 rounded-full border-4 border-white shadow-inner transition-transform duration-500 ${
+          spinning ? "animate-spin-slow" : ""
+        }`}
+        style={{ backgroundImage: gradient }}
+      >
+        <div className="absolute left-1/2 top-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white" />
+        {members.map((m, idx) => {
+          const angle = (360 / members.length) * idx + 360 / members.length / 2;
+          return (
+            <div
+              key={m.id}
+              className="absolute left-1/2 top-1/2 origin-left -translate-y-1/2 text-xs font-semibold text-white drop-shadow"
+              style={{
+                transform: `rotate(${angle}deg) translateX(36%)`,
+              }}
+              title={m.name}
+            >
+              {m.name.length > 12 ? `${m.name.slice(0, 12)}…` : m.name}
+            </div>
+          );
+        })}
+      </div>
+      <div className="absolute -top-2 h-8 w-8 rotate-45 rounded bg-amber-500" />
+      <p className="mt-3 text-sm text-slate-600">
+        {members.length
+          ? "В пуле: " + members.length
+          : "Добавьте участников, чтобы крутить колесо"}
+      </p>
+      {winnerId && (
+        <p className="text-sm text-emerald-700">
+          Победитель: {members.find((m) => m.id === winnerId)?.name}
+        </p>
+      )}
+      {lastWinnerId && (
+        <p className="text-xs text-slate-500">Прошлый победитель исключён из пула</p>
+      )}
+    </div>
+  );
+}
+
