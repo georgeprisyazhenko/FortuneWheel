@@ -350,13 +350,17 @@ function FortuneWheel({
           // Нормализуем угол к 0-360
           const normalizedAngle = ((angle % 360) + 360) % 360;
           // Если угол в нижней половине (90-270), переворачиваем текст на 180 для читаемости
-          const textRotation = normalizedAngle >= 90 && normalizedAngle <= 270 ? angle + 180 : angle;
+          // Используем двойной поворот: сначала позиционируем, потом поворачиваем текст
+          const textFlip = normalizedAngle >= 90 && normalizedAngle <= 270 ? 180 : 0;
+          // Радиус колеса 128px (h-64 w-64 = 256px / 2), отступ от края ~20px
+          const radius = 96; // примерно 75% от 128px
           return (
             <div
               key={m.id}
-              className="absolute left-1/2 top-1/2 origin-left -translate-y-1/2 text-xs font-semibold text-white drop-shadow"
+              className="absolute left-1/2 top-1/2 text-xs font-semibold text-white drop-shadow whitespace-nowrap"
               style={{
-                transform: `rotate(${textRotation}deg) translateX(75%)`,
+                transform: `rotate(${angle}deg) translateX(${radius}px) rotate(${textFlip}deg)`,
+                transformOrigin: '0 0',
               }}
               title={m.name}
             >
