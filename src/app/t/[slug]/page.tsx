@@ -198,7 +198,7 @@ export default function TeamPage({ params }: PageProps) {
           onClick={() => router.push("/")}
           className="text-sm text-indigo-600 hover:underline"
         >
-          ← На главную
+          Создать новую комнату
         </button>
       </header>
 
@@ -345,13 +345,18 @@ function FortuneWheel({
       >
         <div className="absolute left-1/2 top-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white" />
         {members.map((m, idx) => {
-          const angle = (360 / members.length) * idx + 360 / members.length / 2;
+          const slice = 360 / members.length;
+          const angle = idx * slice + slice / 2;
+          // Нормализуем угол к 0-360
+          const normalizedAngle = ((angle % 360) + 360) % 360;
+          // Если угол в нижней половине (90-270), переворачиваем текст на 180 для читаемости
+          const textRotation = normalizedAngle >= 90 && normalizedAngle <= 270 ? angle + 180 : angle;
           return (
             <div
               key={m.id}
               className="absolute left-1/2 top-1/2 origin-left -translate-y-1/2 text-xs font-semibold text-white drop-shadow"
               style={{
-                transform: `rotate(${angle}deg) translateX(36%)`,
+                transform: `rotate(${textRotation}deg) translateX(75%)`,
               }}
               title={m.name}
             >
