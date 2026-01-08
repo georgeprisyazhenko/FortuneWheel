@@ -328,24 +328,32 @@ function FortuneWheel({
   const gradient = useMemo(() => {
     if (!members.length) return "conic-gradient(#e2e8f0 0deg 360deg)";
     const slice = 360 / members.length;
-    // Убеждаемся, что соседние сектора не имеют одинаковый цвет
+    // Гарантируем, что соседние сектора всегда имеют разные цвета
     const colorIndices: number[] = [];
+    
     members.forEach((m, idx) => {
-      let colorIdx = idx % colors.length;
-      // Проверяем предыдущий сектор
-      if (idx > 0 && colorIdx === colorIndices[idx - 1]) {
-        colorIdx = (colorIdx + 1) % colors.length;
-      }
-      // Проверяем, что не совпадает с предыдущим после сдвига
-      if (idx > 0 && colorIdx === colorIndices[idx - 1]) {
-        colorIdx = (colorIdx + 1) % colors.length;
+      let colorIdx;
+      if (idx === 0) {
+        // Первый сектор - берем первый цвет
+        colorIdx = 0;
+      } else {
+        // Для остальных секторов - берем цвет, отличный от предыдущего
+        const prevColorIdx = colorIndices[idx - 1];
+        colorIdx = (prevColorIdx + 1) % colors.length;
       }
       colorIndices.push(colorIdx);
     });
-    // Проверяем последний и первый сектора
+    
+    // Проверяем последний и первый сектора - они тоже соседние!
     if (members.length > 1 && colorIndices[0] === colorIndices[colorIndices.length - 1]) {
+      // Если последний и первый совпадают, меняем первый на следующий
       colorIndices[0] = (colorIndices[0] + 1) % colors.length;
+      // Но нужно проверить, что первый не совпадает со вторым
+      if (members.length > 1 && colorIndices[0] === colorIndices[1]) {
+        colorIndices[0] = (colorIndices[0] + 1) % colors.length;
+      }
     }
+    
     const parts = members.map((m, idx) => {
       const start = idx * slice;
       const end = (idx + 1) * slice;
@@ -372,12 +380,28 @@ function FortuneWheel({
           const normalizedAngle = ((angle % 360) + 360) % 360;
           // Если угол в нижней половине (90-270), переворачиваем текст на 180 для читаемости
           const textFlip = normalizedAngle >= 90 && normalizedAngle <= 270 ? 180 : 0;
-          // Радиус колеса 256px (h-128 w-128 = 512px / 2), размещаем имена на 75% от центра (ближе к краю)
-          const radius = 192; // 75% от 256px
-          // Вычисляем длину дуги сектора для ограничения ширины текста
-          const arcLength = (2 * Math.PI * radius * slice) / 360;
-          // Используем 90% от длины дуги, но не меньше 60px и не больше 200px
-          const maxWidth = Math.max(60, Math.min(arcLength * 0.9, 200));
+          
+          // Динамически вычисляем радиус в зависимости от количества участников
+          // Для малого количества - ближе к краю, для большого - ближе к центру
+          const wheelRadius = 256; // Радиус колеса в пикселях
+          let radius;
+          if (members.length <= 4) {
+            radius = wheelRadius * 0.8; // 80% для 4 и менее
+          } else if (members.length <= 8) {
+            radius = wheelRadius * 0.75; // 75% для 8 и менее
+          } else if (members.length <= 12) {
+            radius = wheelRadius * 0.7; // 70% для 12 и менее
+          } else {
+            // Для большего количества - еще ближе к центру
+            radius = wheelRadius * (0.65 - (members.length - 12) * 0.01);
+            radius = Math.max(radius, wheelRadius * 0.5); // Минимум 50%
+          }
+          
+          // Вычисляем максимальную ширину текста на основе дуги сектора
+          const sliceRad = (slice * Math.PI) / 180;
+          const arcLength = radius * sliceRad;
+          // Используем 85% от длины дуги для безопасного отступа
+          const maxWidth = Math.max(40, Math.min(arcLength * 0.85, 180));
           
           return (
             <div
@@ -389,6 +413,7 @@ function FortuneWheel({
                 width: `${maxWidth}px`,
                 textAlign: 'center',
                 whiteSpace: 'nowrap',
+                overflow: 'hidden',
               }}
               title={m.name}
             >
