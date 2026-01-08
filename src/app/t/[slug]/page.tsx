@@ -400,6 +400,13 @@ function FortuneWheel({
           const needsFlip = normalizedBase > 90 && normalizedBase <= 270;
           const textRotation = baseRotation + (needsFlip ? 180 : 0);
           
+          // Максимальная ширина текста, чтобы не выходил за границы сектора
+          // Ограничиваем по длине дуги на радиусе размещения и по расстоянию до края
+          const sliceRad = (slice * Math.PI) / 180;
+          const arcLength = radius * sliceRad * 0.85; // 85% от длины дуги
+          const distanceToEdge = (wheelRadius - radius) * 1.8; // Расстояние до края
+          const maxWidth = Math.min(arcLength, distanceToEdge, 140); // Не больше 140px
+          
           return (
             <div
               key={m.id}
@@ -410,6 +417,9 @@ function FortuneWheel({
                 transform: `translate(-50%, -50%) rotate(${textRotation}deg)`,
                 textAlign: 'center',
                 whiteSpace: 'nowrap',
+                maxWidth: `${maxWidth}px`,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
               }}
               title={m.name}
             >
