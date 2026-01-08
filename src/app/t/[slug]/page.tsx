@@ -382,6 +382,7 @@ function FortuneWheel({
           const textFlip = normalizedAngle >= 90 && normalizedAngle <= 270 ? 180 : 0;
           
           // Динамически вычисляем радиус в зависимости от количества участников
+          // Учитываем границу колеса (border 4px) и отступ от края
           const wheelRadius = 256; // Радиус колеса в пикселях (512px / 2)
           let radius;
           if (members.length <= 4) {
@@ -395,29 +396,31 @@ function FortuneWheel({
             radius = Math.max(radius, wheelRadius * 0.5);
           }
           
+          // Ограничиваем радиус, чтобы текст не выходил за границы (учитываем border 4px)
+          radius = Math.min(radius, wheelRadius - 20); // Оставляем запас 20px от края
+          
           // Вычисляем максимальную ширину текста на основе дуги сектора
           const sliceRad = (slice * Math.PI) / 180;
           const arcLength = radius * sliceRad;
           const maxWidth = Math.max(40, Math.min(arcLength * 0.85, 180));
           
-          // Размещаем элемент точно на биссектрисе сектора:
-          // Порядок трансформаций (применяются справа налево, т.е. последняя - первая):
-          // 1. translateX(-50%) - центрируем текст по ширине (ПЕРЕД поворотом на textFlip!)
-          // 2. rotate(textFlip) - поворачиваем для читаемости (если нужно)
-          // 3. translateX(radius) - сдвигаем на радиус от центра колеса вдоль биссектрисы
-          // 4. rotate(bisectorAngle) - поворачиваем систему координат на угол биссектрисы
-          // 5. translate(-50%, -50%) - центрируем элемент относительно точки left:50%, top:50%
-          //
-          // Важно: центрируем текст ДО поворота на textFlip, чтобы не учитывать поворот при смещении
+          // Вычисляем точную позицию центра текста на окружности через тригонометрию
+          const angleRad = (bisectorAngle * Math.PI) / 180;
+          const centerX = Math.cos(angleRad) * radius;
+          const centerY = Math.sin(angleRad) * radius;
+          
+          // Размещаем элемент точно на биссектрисе:
+          // 1. Позиционируем центр элемента на вычисленной позиции (left/top через calc)
+          // 2. Поворачиваем текст на угол биссектрисы (для радиального расположения)
+          // 3. Если нужно, переворачиваем на 180 для читаемости
           return (
             <div
               key={m.id}
               className="absolute text-sm font-semibold text-white drop-shadow-lg pointer-events-none"
               style={{
-                left: '50%',
-                top: '50%',
-                transform: `translate(-50%, -50%) rotate(${bisectorAngle}deg) translateX(${radius}px) rotate(${textFlip}deg) translateX(-50%)`,
-                transformOrigin: 'center center',
+                left: `calc(50% + ${centerX}px)`,
+                top: `calc(50% + ${centerY}px)`,
+                transform: `translate(-50%, -50%) rotate(${bisectorAngle + textFlip}deg)`,
                 width: `${maxWidth}px`,
                 textAlign: 'center',
                 whiteSpace: 'nowrap',
