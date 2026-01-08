@@ -379,10 +379,9 @@ function FortuneWheel({
           // Угол биссектрисы сектора (в CSS: 0° = top, по часовой стрелке)
           const bisectorAngle = idx * slice + slice / 2;
           
-          // Радиус размещения текста - фиксированное расстояние от края (10px)
+          // Радиус размещения текста (75% от радиуса колеса)
           const wheelRadius = 256;
-          const edgeOffset = 10; // Отступ от края колеса
-          const radius = wheelRadius - edgeOffset;
+          const radius = wheelRadius * 0.75;
           
           // Переводим угол из CSS системы (0° = top) в математическую (0° = right)
           // CSS 0° = Math -90° (или 270°)
@@ -404,11 +403,6 @@ function FortuneWheel({
           // Обрезаем имя только если больше 20 символов
           const displayName = m.name.length > 20 ? m.name.slice(0, 18) + '…' : m.name;
           
-          // Для позиционирования от края:
-          // - Если текст не перевёрнут (needsFlip=false): начало текста на позиции, текст идёт к центру
-          // - Если текст перевёрнут (needsFlip=true): конец текста на позиции, текст идёт от центра
-          const translateX = needsFlip ? '-100%' : '0%';
-          
           return (
             <div
               key={m.id}
@@ -416,7 +410,8 @@ function FortuneWheel({
               style={{
                 left: `calc(50% + ${x}px)`,
                 top: `calc(50% + ${y}px)`,
-                transform: `translate(${translateX}, -50%) rotate(${textRotation}deg)`,
+                transform: `translate(-50%, -50%) rotate(${textRotation}deg)`,
+                textAlign: 'center',
                 whiteSpace: 'nowrap',
               }}
               title={m.name}
