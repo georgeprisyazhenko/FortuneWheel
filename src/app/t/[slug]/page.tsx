@@ -329,19 +329,27 @@ function FortuneWheel({
     if (!members.length) return "conic-gradient(#e2e8f0 0deg 360deg)";
     const slice = 360 / members.length;
     // Убеждаемся, что соседние сектора не имеют одинаковый цвет
+    const colorIndices: number[] = [];
+    members.forEach((m, idx) => {
+      let colorIdx = idx % colors.length;
+      // Проверяем предыдущий сектор
+      if (idx > 0 && colorIdx === colorIndices[idx - 1]) {
+        colorIdx = (colorIdx + 1) % colors.length;
+      }
+      // Проверяем, что не совпадает с предыдущим после сдвига
+      if (idx > 0 && colorIdx === colorIndices[idx - 1]) {
+        colorIdx = (colorIdx + 1) % colors.length;
+      }
+      colorIndices.push(colorIdx);
+    });
+    // Проверяем последний и первый сектора
+    if (members.length > 1 && colorIndices[0] === colorIndices[colorIndices.length - 1]) {
+      colorIndices[0] = (colorIndices[0] + 1) % colors.length;
+    }
     const parts = members.map((m, idx) => {
       const start = idx * slice;
       const end = (idx + 1) * slice;
-      // Выбираем цвет так, чтобы он отличался от предыдущего
-      let colorIdx = idx % colors.length;
-      // Если это не первый элемент и цвет совпадает с предыдущим, берем следующий
-      if (idx > 0) {
-        const prevColorIdx = (idx - 1) % colors.length;
-        if (colorIdx === prevColorIdx) {
-          colorIdx = (colorIdx + 1) % colors.length;
-        }
-      }
-      const color = colors[colorIdx];
+      const color = colors[colorIndices[idx]];
       return `${color} ${start}deg ${end}deg`;
     });
     return `conic-gradient(${parts.join(",")})`;
@@ -364,18 +372,25 @@ function FortuneWheel({
           const normalizedAngle = ((angle % 360) + 360) % 360;
           // Если угол в нижней половине (90-270), переворачиваем текст на 180 для читаемости
           const textFlip = normalizedAngle >= 90 && normalizedAngle <= 270 ? 180 : 0;
-          // Радиус колеса 256px (h-128 w-128 = 512px / 2), размещаем имена на 80% от центра (ближе к краю)
-          const radius = 205; // 80% от 256px
-          // Вычисляем максимальную ширину текста на основе дуги сектора, чтобы имена не вылезали
+          // Радиус колеса 256px (h-128 w-128 = 512px / 2), размещаем имена на 70% от центра
+          const radius = 180; // 70% от 256px
+          // Вычисляем максимальную ширину текста на основе дуги сектора, с запасом
           const arcLength = (2 * Math.PI * radius * slice) / 360;
-          const maxWidth = Math.min(arcLength * 0.9, 150); // 90% от длины дуги, но не больше 150px
+          const maxWidth = Math.min(arcLength * 0.8, 100); // 80% от длины дуги, но не больше 100px
+          
+          // Вычисляем позицию через тригонометрию для точного центрирования
+          const angleRad = (angle * Math.PI) / 180;
+          const x = Math.cos(angleRad) * radius;
+          const y = Math.sin(angleRad) * radius;
+          
           return (
             <div
               key={m.id}
-              className="absolute left-1/2 top-1/2 text-sm font-semibold text-white drop-shadow-lg"
+              className="absolute text-sm font-semibold text-white drop-shadow-lg pointer-events-none"
               style={{
-                transform: `rotate(${angle}deg) translateX(${radius}px) rotate(${textFlip}deg)`,
-                transformOrigin: '0 50%',
+                left: `calc(50% + ${x}px)`,
+                top: `calc(50% + ${y}px)`,
+                transform: `translate(-50%, -50%) rotate(${textFlip}deg)`,
                 width: `${maxWidth}px`,
                 textAlign: 'center',
                 overflow: 'hidden',
