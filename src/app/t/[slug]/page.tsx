@@ -374,42 +374,50 @@ function FortuneWheel({
         <div className="absolute left-1/2 top-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white" />
         {members.map((m, idx) => {
           const slice = 360 / members.length;
-          // Угол центра сектора - точно по середине
-          const angle = idx * slice + slice / 2;
+          // Угол биссектрисы сектора - точно по середине
+          const bisectorAngle = idx * slice + slice / 2;
           // Нормализуем угол к 0-360
-          const normalizedAngle = ((angle % 360) + 360) % 360;
+          const normalizedAngle = ((bisectorAngle % 360) + 360) % 360;
           // Если угол в нижней половине (90-270), переворачиваем текст на 180 для читаемости
           const textFlip = normalizedAngle >= 90 && normalizedAngle <= 270 ? 180 : 0;
           
           // Динамически вычисляем радиус в зависимости от количества участников
-          // Для малого количества - ближе к краю, для большого - ближе к центру
-          const wheelRadius = 256; // Радиус колеса в пикселях
+          const wheelRadius = 256; // Радиус колеса в пикселях (512px / 2)
           let radius;
           if (members.length <= 4) {
-            radius = wheelRadius * 0.8; // 80% для 4 и менее
+            radius = wheelRadius * 0.8;
           } else if (members.length <= 8) {
-            radius = wheelRadius * 0.75; // 75% для 8 и менее
+            radius = wheelRadius * 0.75;
           } else if (members.length <= 12) {
-            radius = wheelRadius * 0.7; // 70% для 12 и менее
+            radius = wheelRadius * 0.7;
           } else {
-            // Для большего количества - еще ближе к центру
             radius = wheelRadius * (0.65 - (members.length - 12) * 0.01);
-            radius = Math.max(radius, wheelRadius * 0.5); // Минимум 50%
+            radius = Math.max(radius, wheelRadius * 0.5);
           }
+          
+          // Вычисляем точную позицию центра текста на окружности через тригонометрию
+          const angleRad = (bisectorAngle * Math.PI) / 180;
+          const centerX = Math.cos(angleRad) * radius;
+          const centerY = Math.sin(angleRad) * radius;
           
           // Вычисляем максимальную ширину текста на основе дуги сектора
           const sliceRad = (slice * Math.PI) / 180;
           const arcLength = radius * sliceRad;
-          // Используем 85% от длины дуги для безопасного отступа
           const maxWidth = Math.max(40, Math.min(arcLength * 0.85, 180));
+          
+          // Финальный угол поворота: сначала поворачиваем на угол биссектрисы (радиально),
+          // потом если нужно - переворачиваем на 180 для читаемости
+          const finalRotation = bisectorAngle + textFlip;
           
           return (
             <div
               key={m.id}
-              className="absolute left-1/2 top-1/2 text-sm font-semibold text-white drop-shadow-lg pointer-events-none"
+              className="absolute text-sm font-semibold text-white drop-shadow-lg pointer-events-none"
               style={{
-                transform: `rotate(${angle}deg) translateX(${radius}px) rotate(${textFlip}deg) translateX(-50%)`,
-                transformOrigin: '0 0',
+                left: `calc(50% + ${centerX}px)`,
+                top: `calc(50% + ${centerY}px)`,
+                transform: `translate(-50%, -50%) rotate(${finalRotation}deg)`,
+                transformOrigin: 'center center',
                 width: `${maxWidth}px`,
                 textAlign: 'center',
                 whiteSpace: 'nowrap',
