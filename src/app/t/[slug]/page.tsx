@@ -379,9 +379,16 @@ function FortuneWheel({
           // Угол биссектрисы сектора (в CSS: 0° = top, по часовой стрелке)
           const bisectorAngle = idx * slice + slice / 2;
           
-          // Радиус размещения текста (75% от радиуса колеса)
+          // Радиус размещения текста - динамический в зависимости от длины имени
+          // Длинные имена размещаем ближе к краю, где больше места (дуга длиннее)
           const wheelRadius = 256;
-          const radius = wheelRadius * 0.75;
+          const nameLength = m.name.length;
+          // Базовый радиус 65%, увеличиваем до 85% для длинных имён
+          const baseRadius = 0.65;
+          const maxRadius = 0.88;
+          // Плавно увеличиваем радиус для имён длиннее 5 символов
+          const radiusRatio = Math.min(maxRadius, baseRadius + (nameLength - 5) * 0.02);
+          const radius = wheelRadius * Math.max(baseRadius, radiusRatio);
           
           // Переводим угол из CSS системы (0° = top) в математическую (0° = right)
           // CSS 0° = Math -90° (или 270°)
