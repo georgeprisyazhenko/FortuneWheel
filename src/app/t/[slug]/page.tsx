@@ -392,11 +392,13 @@ function FortuneWheel({
           const x = Math.cos(mathAngleRad) * radius;
           const y = Math.sin(mathAngleRad) * radius;
           
-          // Угол поворота текста для радиального расположения
-          // Текст должен быть направлен от центра к краю
-          // Если сектор в нижней половине (90°-270°), переворачиваем для читаемости
-          const needsFlip = bisectorAngle > 90 && bisectorAngle < 270;
-          const textRotation = needsFlip ? bisectorAngle + 180 : bisectorAngle;
+          // Угол поворота текста для радиального расположения (вдоль биссектрисы)
+          // bisectorAngle - 90 делает текст направленным вдоль биссектрисы (от центра к краю)
+          // Если получившийся угол в диапазоне (90°, 270°], текст перевёрнут - добавляем 180°
+          const baseRotation = bisectorAngle - 90;
+          const normalizedBase = ((baseRotation % 360) + 360) % 360;
+          const needsFlip = normalizedBase > 90 && normalizedBase <= 270;
+          const textRotation = baseRotation + (needsFlip ? 180 : 0);
           
           return (
             <div
