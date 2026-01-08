@@ -204,7 +204,7 @@ export default function TeamPage({ params }: PageProps) {
         </button>
       </header>
 
-      <section className="grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)]">
+      <section className="grid gap-4 md:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
         <div className="rounded-xl bg-white p-4 shadow flex flex-col items-center">
           <h3 className="mb-3 text-lg font-semibold">Колесо фортуны</h3>
           <FortuneWheel
@@ -324,14 +324,24 @@ function FortuneWheel({
   winnerId: string | null;
   lastWinnerId: string | null;
 }) {
-  const colors = ["#6366f1", "#f59e0b", "#10b981", "#f43f5e", "#06b6d4", "#a855f7"];
+  const colors = ["#6366f1", "#f59e0b", "#10b981", "#f43f5e", "#06b6d4", "#a855f7", "#ec4899", "#14b8a6", "#8b5cf6", "#f97316"];
   const gradient = useMemo(() => {
     if (!members.length) return "conic-gradient(#e2e8f0 0deg 360deg)";
     const slice = 360 / members.length;
+    // Убеждаемся, что соседние сектора не имеют одинаковый цвет
     const parts = members.map((m, idx) => {
       const start = idx * slice;
       const end = (idx + 1) * slice;
-      const color = colors[idx % colors.length];
+      // Выбираем цвет так, чтобы он отличался от предыдущего
+      let colorIdx = idx % colors.length;
+      // Если это не первый элемент и цвет совпадает с предыдущим, берем следующий
+      if (idx > 0) {
+        const prevColorIdx = (idx - 1) % colors.length;
+        if (colorIdx === prevColorIdx) {
+          colorIdx = (colorIdx + 1) % colors.length;
+        }
+      }
+      const color = colors[colorIdx];
       return `${color} ${start}deg ${end}deg`;
     });
     return `conic-gradient(${parts.join(",")})`;
@@ -348,27 +358,29 @@ function FortuneWheel({
         <div className="absolute left-1/2 top-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white" />
         {members.map((m, idx) => {
           const slice = 360 / members.length;
-          // Угол центра сектора
+          // Угол центра сектора - точно по середине
           const angle = idx * slice + slice / 2;
           // Нормализуем угол к 0-360
           const normalizedAngle = ((angle % 360) + 360) % 360;
           // Если угол в нижней половине (90-270), переворачиваем текст на 180 для читаемости
           const textFlip = normalizedAngle >= 90 && normalizedAngle <= 270 ? 180 : 0;
-          // Радиус колеса 256px (h-128 w-128 = 512px / 2), размещаем имена на 75% от центра (ближе к краю, но не на самом краю)
-          const radius = 192; // 75% от 256px
-          // Максимальная ширина текста зависит от угла сектора, чтобы не вылезал за границы
-          const maxTextWidth = Math.min(120, (2 * Math.PI * radius * slice) / 360 - 10);
+          // Радиус колеса 256px (h-128 w-128 = 512px / 2), размещаем имена на 80% от центра (ближе к краю)
+          const radius = 205; // 80% от 256px
+          // Вычисляем максимальную ширину текста на основе дуги сектора, чтобы имена не вылезали
+          const arcLength = (2 * Math.PI * radius * slice) / 360;
+          const maxWidth = Math.min(arcLength * 0.9, 150); // 90% от длины дуги, но не больше 150px
           return (
             <div
               key={m.id}
               className="absolute left-1/2 top-1/2 text-sm font-semibold text-white drop-shadow-lg"
               style={{
                 transform: `rotate(${angle}deg) translateX(${radius}px) rotate(${textFlip}deg)`,
-                transformOrigin: '0 0',
+                transformOrigin: '0 50%',
+                width: `${maxWidth}px`,
                 textAlign: 'center',
-                maxWidth: `${maxTextWidth}px`,
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
               }}
               title={m.name}
             >
