@@ -372,29 +372,22 @@ function FortuneWheel({
           const normalizedAngle = ((angle % 360) + 360) % 360;
           // Если угол в нижней половине (90-270), переворачиваем текст на 180 для читаемости
           const textFlip = normalizedAngle >= 90 && normalizedAngle <= 270 ? 180 : 0;
-          // Радиус колеса 256px (h-128 w-128 = 512px / 2), размещаем имена на 70% от центра
-          const radius = 180; // 70% от 256px
-          // Вычисляем максимальную ширину текста на основе дуги сектора, с запасом
+          // Радиус колеса 256px (h-128 w-128 = 512px / 2), размещаем имена на 75% от центра (ближе к краю)
+          const radius = 192; // 75% от 256px
+          // Вычисляем длину дуги сектора для ограничения ширины текста
           const arcLength = (2 * Math.PI * radius * slice) / 360;
-          const maxWidth = Math.min(arcLength * 0.8, 100); // 80% от длины дуги, но не больше 100px
-          
-          // Вычисляем позицию через тригонометрию для точного центрирования
-          const angleRad = (angle * Math.PI) / 180;
-          const x = Math.cos(angleRad) * radius;
-          const y = Math.sin(angleRad) * radius;
+          // Используем 90% от длины дуги, но не меньше 60px и не больше 200px
+          const maxWidth = Math.max(60, Math.min(arcLength * 0.9, 200));
           
           return (
             <div
               key={m.id}
-              className="absolute text-sm font-semibold text-white drop-shadow-lg pointer-events-none"
+              className="absolute left-1/2 top-1/2 text-sm font-semibold text-white drop-shadow-lg pointer-events-none"
               style={{
-                left: `calc(50% + ${x}px)`,
-                top: `calc(50% + ${y}px)`,
-                transform: `translate(-50%, -50%) rotate(${textFlip}deg)`,
+                transform: `rotate(${angle}deg) translateX(${radius}px) rotate(${textFlip}deg) translateX(-50%)`,
+                transformOrigin: '0 0',
                 width: `${maxWidth}px`,
                 textAlign: 'center',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
                 whiteSpace: 'nowrap',
               }}
               title={m.name}
