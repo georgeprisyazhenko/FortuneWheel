@@ -401,13 +401,14 @@ function FortuneWheel({
           const maxWidth = Math.max(40, Math.min(arcLength * 0.85, 180));
           
           // Размещаем элемент точно на биссектрисе сектора:
-          // Порядок трансформаций (применяются справа налево):
-          // 1. translateX(-50%) - центрируем текст (относительно его ширины)
+          // Порядок трансформаций (применяются справа налево, т.е. последняя - первая):
+          // 1. translateX(-50%) - центрируем текст по ширине (ПЕРЕД поворотом на textFlip!)
           // 2. rotate(textFlip) - поворачиваем для читаемости (если нужно)
           // 3. translateX(radius) - сдвигаем на радиус от центра колеса вдоль биссектрисы
           // 4. rotate(bisectorAngle) - поворачиваем систему координат на угол биссектрисы
-          // transformOrigin: '0 0' означает, что повороты происходят от точки (0,0), т.е. от центра колеса
-          
+          // 5. translate(-50%, -50%) - центрируем элемент относительно точки left:50%, top:50%
+          //
+          // Важно: центрируем текст ДО поворота на textFlip, чтобы не учитывать поворот при смещении
           return (
             <div
               key={m.id}
@@ -415,8 +416,8 @@ function FortuneWheel({
               style={{
                 left: '50%',
                 top: '50%',
-                transform: `rotate(${bisectorAngle}deg) translateX(${radius}px) rotate(${textFlip}deg) translateX(-50%)`,
-                transformOrigin: '0 0',
+                transform: `translate(-50%, -50%) rotate(${bisectorAngle}deg) translateX(${radius}px) rotate(${textFlip}deg) translateX(-50%)`,
+                transformOrigin: 'center center',
                 width: `${maxWidth}px`,
                 textAlign: 'center',
                 whiteSpace: 'nowrap',
