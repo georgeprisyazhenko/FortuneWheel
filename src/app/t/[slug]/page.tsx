@@ -379,16 +379,10 @@ function FortuneWheel({
           // Угол биссектрисы сектора (в CSS: 0° = top, по часовой стрелке)
           const bisectorAngle = idx * slice + slice / 2;
           
-          // Радиус размещения текста - динамический в зависимости от длины имени
-          // Длинные имена размещаем ближе к краю, где больше места (дуга длиннее)
+          // Радиус размещения текста - фиксированное расстояние от края (10px)
           const wheelRadius = 256;
-          const nameLength = m.name.length;
-          // Базовый радиус 65%, увеличиваем до 85% для длинных имён
-          const baseRadius = 0.65;
-          const maxRadius = 0.88;
-          // Плавно увеличиваем радиус для имён длиннее 5 символов
-          const radiusRatio = Math.min(maxRadius, baseRadius + (nameLength - 5) * 0.02);
-          const radius = wheelRadius * Math.max(baseRadius, radiusRatio);
+          const edgeOffset = 10; // Отступ от края колеса
+          const radius = wheelRadius - edgeOffset;
           
           // Переводим угол из CSS системы (0° = top) в математическую (0° = right)
           // CSS 0° = Math -90° (или 270°)
@@ -410,6 +404,11 @@ function FortuneWheel({
           // Обрезаем имя только если больше 20 символов
           const displayName = m.name.length > 20 ? m.name.slice(0, 18) + '…' : m.name;
           
+          // Для позиционирования от края:
+          // - Если текст не перевёрнут (needsFlip=false): начало текста на позиции, текст идёт к центру
+          // - Если текст перевёрнут (needsFlip=true): конец текста на позиции, текст идёт от центра
+          const translateX = needsFlip ? '-100%' : '0%';
+          
           return (
             <div
               key={m.id}
@@ -417,8 +416,7 @@ function FortuneWheel({
               style={{
                 left: `calc(50% + ${x}px)`,
                 top: `calc(50% + ${y}px)`,
-                transform: `translate(-50%, -50%) rotate(${textRotation}deg)`,
-                textAlign: 'center',
+                transform: `translate(${translateX}, -50%) rotate(${textRotation}deg)`,
                 whiteSpace: 'nowrap',
               }}
               title={m.name}
