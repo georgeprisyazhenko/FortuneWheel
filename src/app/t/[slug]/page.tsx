@@ -395,29 +395,28 @@ function FortuneWheel({
             radius = Math.max(radius, wheelRadius * 0.5);
           }
           
-          // Вычисляем точную позицию центра текста на окружности через тригонометрию
-          const angleRad = (bisectorAngle * Math.PI) / 180;
-          const centerX = Math.cos(angleRad) * radius;
-          const centerY = Math.sin(angleRad) * radius;
-          
           // Вычисляем максимальную ширину текста на основе дуги сектора
           const sliceRad = (slice * Math.PI) / 180;
           const arcLength = radius * sliceRad;
           const maxWidth = Math.max(40, Math.min(arcLength * 0.85, 180));
           
-          // Финальный угол поворота: сначала поворачиваем на угол биссектрисы (радиально),
-          // потом если нужно - переворачиваем на 180 для читаемости
-          const finalRotation = bisectorAngle + textFlip;
+          // Размещаем элемент точно на биссектрисе сектора:
+          // Порядок трансформаций (применяются справа налево):
+          // 1. translateX(-50%) - центрируем текст (относительно его ширины)
+          // 2. rotate(textFlip) - поворачиваем для читаемости (если нужно)
+          // 3. translateX(radius) - сдвигаем на радиус от центра колеса вдоль биссектрисы
+          // 4. rotate(bisectorAngle) - поворачиваем систему координат на угол биссектрисы
+          // transformOrigin: '0 0' означает, что повороты происходят от точки (0,0), т.е. от центра колеса
           
           return (
             <div
               key={m.id}
               className="absolute text-sm font-semibold text-white drop-shadow-lg pointer-events-none"
               style={{
-                left: `calc(50% + ${centerX}px)`,
-                top: `calc(50% + ${centerY}px)`,
-                transform: `translate(-50%, -50%) rotate(${finalRotation}deg)`,
-                transformOrigin: 'center center',
+                left: '50%',
+                top: '50%',
+                transform: `rotate(${bisectorAngle}deg) translateX(${radius}px) rotate(${textFlip}deg) translateX(-50%)`,
+                transformOrigin: '0 0',
                 width: `${maxWidth}px`,
                 textAlign: 'center',
                 whiteSpace: 'nowrap',
