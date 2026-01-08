@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { poolForToday, pickRandom, Member } from "@/lib/selection";
 
+export const dynamic = 'force-dynamic';
+
 type Team = {
   id: string;
   name: string;
@@ -202,7 +204,25 @@ export default function TeamPage({ params }: PageProps) {
         </button>
       </header>
 
-      <section className="grid gap-4 md:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
+      <section className="grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)]">
+        <div className="rounded-xl bg-white p-4 shadow flex flex-col items-center">
+          <h3 className="mb-3 text-lg font-semibold">Колесо фортуны</h3>
+          <FortuneWheel
+            members={pool}
+            spinning={spinning}
+            winnerId={winnerId}
+            lastWinnerId={team.last_winner_member_id}
+          />
+          <button
+            onClick={handleSpin}
+            disabled={spinning}
+            className="mt-3 rounded-full bg-emerald-600 px-6 py-2.5 text-base font-semibold text-white shadow hover:bg-emerald-700 disabled:opacity-60"
+          >
+            Ему повезёт
+          </button>
+          {message && <p className="mt-3 text-sm text-emerald-700">{message}</p>}
+        </div>
+
         <div className="rounded-xl bg-white p-4 shadow flex flex-col gap-4">
           <div>
             <h3 className="mb-2 text-base font-semibold">Добавить участника</h3>
@@ -264,24 +284,6 @@ export default function TeamPage({ params }: PageProps) {
             </div>
           </div>
         </div>
-
-        <div className="rounded-xl bg-white p-4 shadow flex flex-col items-center">
-          <h3 className="mb-3 text-lg font-semibold">Колесо фортуны</h3>
-          <FortuneWheel
-            members={pool}
-            spinning={spinning}
-            winnerId={winnerId}
-            lastWinnerId={team.last_winner_member_id}
-          />
-          <button
-            onClick={handleSpin}
-            disabled={spinning}
-            className="mt-3 rounded-full bg-emerald-600 px-6 py-2.5 text-base font-semibold text-white shadow hover:bg-emerald-700 disabled:opacity-60"
-          >
-            Ему повезёт
-          </button>
-          {message && <p className="mt-3 text-sm text-emerald-700">{message}</p>}
-        </div>
       </section>
 
     </main>
@@ -338,7 +340,7 @@ function FortuneWheel({
   return (
     <div className="relative flex flex-col items-center">
       <div
-        className={`relative h-64 w-64 rounded-full border-4 border-white shadow-inner transition-transform duration-500 ${
+        className={`relative h-128 w-128 rounded-full border-4 border-white shadow-inner transition-transform duration-500 ${
           spinning ? "animate-spin-slow" : ""
         }`}
         style={{ backgroundImage: gradient }}
@@ -346,25 +348,31 @@ function FortuneWheel({
         <div className="absolute left-1/2 top-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white" />
         {members.map((m, idx) => {
           const slice = 360 / members.length;
+          // Угол центра сектора
           const angle = idx * slice + slice / 2;
           // Нормализуем угол к 0-360
           const normalizedAngle = ((angle % 360) + 360) % 360;
           // Если угол в нижней половине (90-270), переворачиваем текст на 180 для читаемости
-          // Используем двойной поворот: сначала позиционируем, потом поворачиваем текст
           const textFlip = normalizedAngle >= 90 && normalizedAngle <= 270 ? 180 : 0;
-          // Радиус колеса 128px (h-64 w-64 = 256px / 2), отступ от края ~20px
-          const radius = 96; // примерно 75% от 128px
+          // Радиус колеса 256px (h-128 w-128 = 512px / 2), размещаем имена на 75% от центра (ближе к краю, но не на самом краю)
+          const radius = 192; // 75% от 256px
+          // Максимальная ширина текста зависит от угла сектора, чтобы не вылезал за границы
+          const maxTextWidth = Math.min(120, (2 * Math.PI * radius * slice) / 360 - 10);
           return (
             <div
               key={m.id}
-              className="absolute left-1/2 top-1/2 text-xs font-semibold text-white drop-shadow whitespace-nowrap"
+              className="absolute left-1/2 top-1/2 text-sm font-semibold text-white drop-shadow-lg"
               style={{
                 transform: `rotate(${angle}deg) translateX(${radius}px) rotate(${textFlip}deg)`,
                 transformOrigin: '0 0',
+                textAlign: 'center',
+                maxWidth: `${maxTextWidth}px`,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
               }}
               title={m.name}
             >
-              {m.name.length > 12 ? `${m.name.slice(0, 12)}…` : m.name}
+              {m.name}
             </div>
           );
         })}

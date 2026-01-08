@@ -7,7 +7,17 @@ const config: Config = {
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      height: {
+        '128': '32rem', // 512px
+      },
+      width: {
+        '128': '32rem', // 512px
+      },
+      animation: {
+        'spin-slow': 'spin 3s linear infinite',
+      },
+    },
   },
   plugins: [],
 };

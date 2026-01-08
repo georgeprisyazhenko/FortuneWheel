@@ -5,6 +5,8 @@ import { useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { slugify } from "@/lib/slugify";
 
+export const dynamic = 'force-dynamic';
+
 async function slugExists(slug: string) {
   const { data, error } = await supabase
     .from("teams")
