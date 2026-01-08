@@ -405,8 +405,11 @@ function FortuneWheel({
           const angleRad = (bisectorAngle * Math.PI) / 180;
           
           // Вычисляем координаты точки на окружности (на биссектрисе на расстоянии radius)
-          const x = Math.cos(angleRad) * radius;
-          const y = Math.sin(angleRad) * radius;
+          // CSS conic-gradient: 0° = top, по часовой стрелке
+          // Тригонометрия: 0° = right, против часовой стрелки
+          // Формула для CSS системы координат (y увеличивается вниз):
+          const x = Math.sin(angleRad) * radius;
+          const y = -Math.cos(angleRad) * radius;
           
           // Определяем, нужно ли перевернуть текст для читаемости
           // Если угол в диапазоне 90-270 (нижняя половина), текст нужно перевернуть на 180°
