@@ -373,72 +373,41 @@ function FortuneWheel({
       >
         <div className="absolute left-1/2 top-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white" />
         {members.map((m, idx) => {
-          const slice = 360 / members.length;
-          // Угол биссектрисы сектора - точно по середине сектора
+          const n = members.length;
+          const slice = 360 / n;
+          
+          // Угол биссектрисы сектора (в CSS: 0° = top, по часовой стрелке)
           const bisectorAngle = idx * slice + slice / 2;
-          // Нормализуем угол к 0-360
-          const normalizedAngle = ((bisectorAngle % 360) + 360) % 360;
           
-          // Динамически вычисляем радиус размещения текста (ближе к краю, чем к центру)
-          const wheelRadius = 256; // Радиус колеса в пикселях (512px / 2)
-          let radius;
-          if (members.length <= 4) {
-            radius = wheelRadius * 0.8; // 80% от радиуса
-          } else if (members.length <= 8) {
-            radius = wheelRadius * 0.75; // 75% от радиуса
-          } else if (members.length <= 12) {
-            radius = wheelRadius * 0.7; // 70% от радиуса
-          } else {
-            radius = wheelRadius * (0.65 - (members.length - 12) * 0.01);
-            radius = Math.max(radius, wheelRadius * 0.5); // Минимум 50%
-          }
+          // Радиус размещения текста (75% от радиуса колеса)
+          const wheelRadius = 256;
+          const radius = wheelRadius * 0.75;
           
-          // Ограничиваем радиус, чтобы текст не выходил за границы
-          radius = Math.min(radius, wheelRadius - 25); // Запас 25px от края
+          // Переводим угол из CSS системы (0° = top) в математическую (0° = right)
+          // CSS 0° = Math -90° (или 270°)
+          // Формула: mathAngle = cssAngle - 90
+          const mathAngleRad = (bisectorAngle - 90) * Math.PI / 180;
           
-          // Вычисляем максимальную ширину текста (не сокращаем, но ограничиваем для безопасности)
-          const sliceRad = (slice * Math.PI) / 180;
-          const arcLength = radius * sliceRad;
-          const maxWidth = Math.max(60, Math.min(arcLength * 0.9, 250)); // Больше максимальная ширина
+          // Координаты точки на биссектрисе
+          const x = Math.cos(mathAngleRad) * radius;
+          const y = Math.sin(mathAngleRad) * radius;
           
-          // Вычисляем угол биссектрисы в радианах
-          const angleRad = (bisectorAngle * Math.PI) / 180;
-          
-          // Вычисляем координаты точки на окружности (на биссектрисе на расстоянии radius)
-          // CSS conic-gradient: 0° = top, по часовой стрелке
-          // Тригонометрия: 0° = right, против часовой стрелки
-          // Формула для CSS системы координат (y увеличивается вниз):
-          const x = Math.sin(angleRad) * radius;
-          const y = -Math.cos(angleRad) * radius;
-          
-          // Определяем, нужно ли перевернуть текст для читаемости
-          // Если угол в диапазоне 90-270 (нижняя половина), текст нужно перевернуть на 180°
-          const needsFlip = normalizedAngle >= 90 && normalizedAngle <= 270;
-          
-          // Размещаем элемент точно на биссектрисе:
-          // 1. Позиционируем элемент так, чтобы его центр был в точке (x, y) на окружности
-          // 2. Центрируем элемент через translate(-50%, -50%)
-          // 3. Поворачиваем на угол биссектрисы для радиального расположения
-          // 4. Если нужно, поворачиваем дополнительно на 180° для читаемости
-          //
-          // Порядок трансформаций (применяются справа налево):
-          // rotate(flip) -> rotate(bisectorAngle) -> translate(-50%, -50%)
-          const flipAngle = needsFlip ? 180 : 0;
+          // Угол поворота текста для радиального расположения
+          // Текст должен быть направлен от центра к краю
+          // Если сектор в нижней половине (90°-270°), переворачиваем для читаемости
+          const needsFlip = bisectorAngle > 90 && bisectorAngle < 270;
+          const textRotation = needsFlip ? bisectorAngle + 180 : bisectorAngle;
           
           return (
             <div
               key={m.id}
               className="absolute text-sm font-semibold text-white drop-shadow-lg pointer-events-none"
               style={{
-                // Позиционируем элемент так, чтобы его центр был на точке (x, y) относительно центра колеса
                 left: `calc(50% + ${x}px)`,
                 top: `calc(50% + ${y}px)`,
-                // Порядок трансформаций: сначала центрируем, потом поворачиваем на биссектрису, потом для читаемости
-                transform: `translate(-50%, -50%) rotate(${bisectorAngle}deg) rotate(${flipAngle}deg)`,
-                width: `${maxWidth}px`,
+                transform: `translate(-50%, -50%) rotate(${textRotation}deg)`,
                 textAlign: 'center',
                 whiteSpace: 'nowrap',
-                // Убираем overflow: hidden, чтобы текст не сокращался
               }}
               title={m.name}
             >
