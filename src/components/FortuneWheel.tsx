@@ -64,9 +64,8 @@ export function FortuneWheel({
   }, [members]);
 
   return (
-    <div className="relative flex flex-col items-center">
-      <div
-        className="relative h-128 w-128 rounded-full border-4 border-white shadow-inner"
+    <div className="relative flex flex-col items-center w-full">
+      <div className="relative w-full max-w-[512px] aspect-square rounded-full border-4 border-white shadow-inner"
         style={{
           backgroundImage: gradient,
           transform: `rotate(${rotation}deg)`,
@@ -83,15 +82,18 @@ export function FortuneWheel({
           // Угол биссектрисы сектора (в CSS: 0° = top, по часовой стрелке)
           const bisectorAngle = idx * slice + slice / 2;
 
-          // Радиус размещения текста
-          const radius = WHEEL_RADIUS * WHEEL_TEXT_RADIUS_RATIO;
+          // Радиус размещения текста (в процентах от размера контейнера)
+          // WHEEL_TEXT_RADIUS_RATIO = 0.65, значит текст на 65% от центра к краю
+          // Это примерно 32.5% от центра контейнера (50% * 0.65)
+          const radiusPercent = 50 * WHEEL_TEXT_RADIUS_RATIO;
 
           // Переводим угол из CSS системы (0° = top) в математическую (0° = right)
           const mathAngleRad = ((bisectorAngle - 90) * Math.PI) / 180;
 
-          // Координаты точки на биссектрисе
-          const x = Math.cos(mathAngleRad) * radius;
-          const y = Math.sin(mathAngleRad) * radius;
+          // Координаты точки на биссектрисе (в процентах от размера контейнера)
+          // Используем проценты для адаптивности
+          const xPercent = Math.cos(mathAngleRad) * radiusPercent;
+          const yPercent = Math.sin(mathAngleRad) * radiusPercent;
 
           // Угол поворота текста для радиального расположения
           const textRotation = bisectorAngle - 90;
@@ -105,10 +107,10 @@ export function FortuneWheel({
           return (
             <div
               key={m.id}
-              className="absolute text-sm font-semibold text-white drop-shadow-lg pointer-events-none"
+              className="absolute text-xs sm:text-sm font-semibold text-white drop-shadow-lg pointer-events-none"
               style={{
-                left: `calc(50% + ${x}px)`,
-                top: `calc(50% + ${y}px)`,
+                left: `calc(50% + ${xPercent}%)`,
+                top: `calc(50% + ${yPercent}%)`,
                 transform: `translate(-50%, -50%) rotate(${textRotation}deg)`,
                 textAlign: "center",
                 whiteSpace: "nowrap",
@@ -121,13 +123,13 @@ export function FortuneWheel({
         })}
       </div>
       <div
-        className="absolute -right-2 top-1/2 -translate-y-1/2"
+        className="absolute right-0 sm:-right-2 top-1/2 -translate-y-1/2"
         style={{
           width: 0,
           height: 0,
-          borderTop: "16px solid transparent",
-          borderBottom: "16px solid transparent",
-          borderRight: "40px solid #5c5b5b",
+          borderTop: "12px solid transparent",
+          borderBottom: "12px solid transparent",
+          borderRight: "30px solid #5c5b5b",
         }}
       />
       <p className="mt-3 text-sm text-slate-600">

@@ -168,10 +168,10 @@ export default function TeamPage({ params }: PageProps) {
   }
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-6xl flex-col gap-4 px-3 py-4">
-      <header className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <div className="flex items-center gap-2">
-          <span className="text-2xl font-semibold">Колесо фортуны</span>
+    <main className="flex min-h-screen w-full flex-col gap-4 px-2 py-3 sm:px-3 sm:py-4">
+      <header className="flex items-start justify-between gap-2 w-full">
+        <div className="flex items-center gap-2 flex-1 min-w-0">
+          <span className="text-xl sm:text-2xl font-semibold whitespace-nowrap">Колесо фортуны</span>
           <EditableTitle
             name={team.name}
             onSave={handleSaveName}
@@ -180,14 +180,14 @@ export default function TeamPage({ params }: PageProps) {
         </div>
         <button
           onClick={() => router.push("/")}
-          className="text-sm text-indigo-600 hover:underline"
+          className="text-xs sm:text-sm text-indigo-600 hover:underline whitespace-nowrap ml-2"
         >
           Создать новую комнату
         </button>
       </header>
 
-      <section className="grid gap-4 md:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
-        <div className="rounded-xl bg-white p-4 shadow flex flex-col items-center">
+      <section className="flex flex-col md:grid md:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] gap-4 w-full">
+        <div className="rounded-xl bg-white p-3 sm:p-4 shadow flex flex-col items-center w-full">
           <FortuneWheel
             members={wheelMembers}
             spinning={spinning}
@@ -198,11 +198,11 @@ export default function TeamPage({ params }: PageProps) {
           <button
             onClick={handleSpin}
             disabled={spinning}
-            className="mt-3 rounded-full bg-emerald-600 px-6 py-2.5 text-base font-semibold text-white shadow hover:bg-emerald-700 disabled:opacity-60"
+            className="mt-3 rounded-full bg-emerald-600 px-6 py-2.5 text-sm sm:text-base font-semibold text-white shadow hover:bg-emerald-700 disabled:opacity-60 w-full sm:w-auto"
           >
             Ему повезёт
           </button>
-          {message && <p className="mt-3 text-sm text-emerald-700">{message}</p>}
+          {message && <p className="mt-3 text-sm text-emerald-700 text-center">{message}</p>}
           {showAnimation && winnerName && (
             <WinnerAnimation
               winnerName={winnerName}
