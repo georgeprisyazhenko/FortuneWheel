@@ -26,7 +26,7 @@ export const WHEEL_COLORS = [
 // Winner animation constants
 export const WINNER_ANIMATION_DURATION = 2000; // milliseconds
 export const WINNER_ANIMATION_FADE_OUT_DELAY = 1700; // milliseconds
-export const WINNER_EMOJIS = ["👉", "🎉", "🎊", "😎"];
+export const WINNER_EMOJIS = ["🫵", "🎉", "👀", "😎", "🎈", "🏆", "🧨", "🐳"];
 export const WINNER_EMOJI_COUNT_MIN = 20;
 export const WINNER_EMOJI_COUNT_MAX = 30;
 export const WINNER_EMOJI_SIZE_MIN = 40; // pixels
