@@ -199,7 +199,7 @@ export default function TeamPage({ params }: PageProps) {
         setTeam({ ...team, last_winner_member_id: selected.id });
       }
       setSpinning(false);
-    }, 4000); // 4 секунды анимации
+    }, 3000); // Увеличил время для более плавной анимации
   };
 
   if (loading) {
@@ -405,7 +405,7 @@ function FortuneWheel({
         style={{
           backgroundImage: gradient,
           transform: `rotate(${rotation}deg)`,
-          transition: spinning ? 'transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99)' : 'none',
+          transition: spinning ? 'transform 3s cubic-bezier(0.17, 0.67, 0.12, 0.99)' : 'none',
         }}
       >
         <div className="absolute left-1/2 top-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white" />
@@ -423,17 +423,15 @@ function FortuneWheel({
           // Переводим угол из CSS системы (0° = top) в математическую (0° = right)
           const mathAngleRad = (bisectorAngle - 90) * Math.PI / 180;
           
-          // Координаты точки на биссектрисе (относительно колеса, без учёта rotation)
+          // Координаты точки на биссектрисе
           const x = Math.cos(mathAngleRad) * radius;
           const y = Math.sin(mathAngleRad) * radius;
           
           // Угол поворота текста для радиального расположения (вдоль биссектрисы)
-          // Компенсируем поворот колеса, чтобы текст всегда был читаемым
           const baseRotation = bisectorAngle - 90;
           const normalizedBase = ((baseRotation % 360) + 360) % 360;
           const needsFlip = normalizedBase > 90 && normalizedBase <= 270;
-          // Текст поворачивается относительно колеса, поэтому компенсируем поворот колеса
-          const textRotationRelative = baseRotation + (needsFlip ? 180 : 0);
+          const textRotation = baseRotation + (needsFlip ? 180 : 0);
           
           // Обрезаем имя только если больше 20 символов
           const displayName = m.name.length > 20 ? m.name.slice(0, 18) + '…' : m.name;
@@ -445,9 +443,7 @@ function FortuneWheel({
               style={{
                 left: `calc(50% + ${x}px)`,
                 top: `calc(50% + ${y}px)`,
-                // Текст внутри вращающегося колеса, компенсируем поворот колеса для читаемости
-                transform: `translate(-50%, -50%) rotate(${-rotation + textRotationRelative}deg)`,
-                transition: spinning ? 'transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99)' : 'none',
+                transform: `translate(-50%, -50%) rotate(${textRotation}deg)`,
                 textAlign: 'center',
                 whiteSpace: 'nowrap',
               }}
