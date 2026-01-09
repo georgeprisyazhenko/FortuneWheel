@@ -30,6 +30,7 @@ export default function TeamPage({ params }: PageProps) {
   const [spinning, setSpinning] = useState(false);
   const [winnerId, setWinnerId] = useState<string | null>(null);
   const [message, setMessage] = useState("");
+  const [wheelRotation, setWheelRotation] = useState(0);
 
   useEffect(() => {
     const load = async () => {
@@ -141,6 +142,12 @@ export default function TeamPage({ params }: PageProps) {
     [members, team?.last_winner_member_id],
   );
 
+  // Участники на колесе (без отпускных)
+  const wheelMembers = useMemo(
+    () => members.filter(m => !m.vacation),
+    [members]
+  );
+
   const handleSpin = async () => {
     if (!team) return;
     if (!pool.length) {
@@ -149,9 +156,34 @@ export default function TeamPage({ params }: PageProps) {
     }
     const selected = pickRandom(pool);
     if (!selected) return;
+    
+    // Находим индекс победителя в массиве wheelMembers (участники на колесе)
+    const winnerIdx = wheelMembers.findIndex(m => m.id === selected.id);
+    if (winnerIdx === -1) return;
+    
+    // Вычисляем угол, на который нужно повернуть колесо
+    // Указатель сверху (0°), биссектриса сектора победителя должна быть сверху
+    const n = wheelMembers.length;
+    const slice = 360 / n;
+    const bisectorAngle = winnerIdx * slice + slice / 2;
+    
+    // Чтобы биссектриса оказалась сверху (на 0°), нужно повернуть колесо так,
+    // чтобы сектор победителя оказался под указателем
+    // Текущее положение колеса (какой угол сверху) = wheelRotation % 360
+    // Нужное положение = 360 - bisectorAngle
+    const currentAngle = ((wheelRotation % 360) + 360) % 360;
+    const targetAngle = ((360 - bisectorAngle) % 360 + 360) % 360;
+    let angleToWinner = targetAngle - currentAngle;
+    if (angleToWinner <= 0) angleToWinner += 360;
+    
+    // Добавляем несколько полных оборотов (5-8) для эффекта вращения
+    const fullRotations = 5 + Math.floor(Math.random() * 3);
+    const targetRotation = wheelRotation + fullRotations * 360 + angleToWinner;
+    
     setSpinning(true);
     setWinnerId(null);
     setMessage("");
+    setWheelRotation(targetRotation);
 
     setTimeout(async () => {
       setWinnerId(selected.id);
@@ -167,7 +199,7 @@ export default function TeamPage({ params }: PageProps) {
         setTeam({ ...team, last_winner_member_id: selected.id });
       }
       setSpinning(false);
-    }, 2200);
+    }, 3000); // Увеличил время для более плавной анимации
   };
 
   if (loading) {
@@ -208,10 +240,11 @@ export default function TeamPage({ params }: PageProps) {
         <div className="rounded-xl bg-white p-4 shadow flex flex-col items-center">
           <h3 className="mb-3 text-lg font-semibold">Колесо фортуны</h3>
           <FortuneWheel
-            members={members.filter(m => !m.vacation)}
+            members={wheelMembers}
             spinning={spinning}
             winnerId={winnerId}
             poolLength={pool.length}
+            rotation={wheelRotation}
           />
           <button
             onClick={handleSpin}
@@ -318,11 +351,13 @@ function FortuneWheel({
   spinning,
   winnerId,
   poolLength,
+  rotation,
 }: {
   members: Member[];
   spinning: boolean;
   winnerId: string | null;
   poolLength: number;
+  rotation: number;
 }) {
   const colors = ["#6366f1", "#f59e0b", "#10b981", "#f43f5e", "#06b6d4", "#a855f7", "#ec4899", "#14b8a6", "#8b5cf6", "#f97316"];
   const gradient = useMemo(() => {
@@ -366,10 +401,12 @@ function FortuneWheel({
   return (
     <div className="relative flex flex-col items-center">
       <div
-        className={`relative h-128 w-128 rounded-full border-4 border-white shadow-inner transition-transform duration-500 ${
-          spinning ? "animate-spin-slow" : ""
-        }`}
-        style={{ backgroundImage: gradient }}
+        className="relative h-128 w-128 rounded-full border-4 border-white shadow-inner"
+        style={{
+          backgroundImage: gradient,
+          transform: `rotate(${rotation}deg)`,
+          transition: spinning ? 'transform 3s cubic-bezier(0.17, 0.67, 0.12, 0.99)' : 'none',
+        }}
       >
         <div className="absolute left-1/2 top-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white" />
         {members.map((m, idx) => {
