@@ -291,19 +291,20 @@ export default function TeamPage({ params }: PageProps) {
           </div>
 
           <div className="border-t border-slate-100 pt-3">
-            <div className="mb-2 flex items-center justify-between">
+            <div className="mb-2 grid grid-cols-[1fr_40px_auto] items-center gap-3 px-2">
               <h3 className="text-base font-semibold">Участники</h3>
-              <div className="flex flex-col items-center" style={{ width: '40px' }}>
+              <div className="flex justify-center">
                 <span className="text-xs text-slate-500">Исключить</span>
               </div>
+              <div></div>
             </div>
             <div className="space-y-1 text-sm">
               {members.map((member) => (
                 <div
                   key={member.id}
-                  className="group flex items-center rounded border border-slate-100 px-2 py-1.5 hover:bg-slate-50"
+                  className="group grid grid-cols-[1fr_40px_auto] items-center gap-3 rounded border border-slate-100 px-2 py-1.5 hover:bg-slate-50"
                 >
-                  <div className="flex flex-col flex-1 min-w-0">
+                  <div className="flex flex-col min-w-0">
                     <span className="truncate">{member.name}</span>
                     {team.last_winner_member_id === member.id && (
                       <span className="text-[11px] text-amber-600">
@@ -311,23 +312,21 @@ export default function TeamPage({ params }: PageProps) {
                       </span>
                     )}
                   </div>
-                  <div className="flex items-center gap-3 flex-shrink-0">
-                    <div className="flex justify-center" style={{ width: '40px' }}>
-                      <input
-                        type="checkbox"
-                        checked={member.vacation}
-                        onChange={(e) =>
-                          handleToggleVacation(member, e.target.checked)
-                        }
-                      />
-                    </div>
-                    <button
-                      onClick={() => handleDeleteMember(member)}
-                      className="opacity-0 group-hover:opacity-100 transition-opacity text-xs text-red-600 hover:underline"
-                    >
-                      Удалить
-                    </button>
+                  <div className="flex justify-center">
+                    <input
+                      type="checkbox"
+                      checked={member.vacation}
+                      onChange={(e) =>
+                        handleToggleVacation(member, e.target.checked)
+                      }
+                    />
                   </div>
+                  <button
+                    onClick={() => handleDeleteMember(member)}
+                    className="opacity-0 group-hover:opacity-100 transition-opacity text-xs text-red-600 hover:underline"
+                  >
+                    Удалить
+                  </button>
                 </div>
               ))}
               {!members.length && (
