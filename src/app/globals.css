@@ -26,23 +26,49 @@ body {
 @keyframes emoji-appear {
   0% {
     opacity: 0;
-    transform: scale(0) rotate(0deg);
+    transform: scale(0);
   }
   20% {
     opacity: 1;
-    transform: scale(1) rotate(180deg);
+    transform: scale(1);
   }
   80% {
     opacity: 1;
-    transform: scale(1) rotate(360deg);
+    transform: scale(1);
   }
   100% {
     opacity: 0;
-    transform: scale(0) rotate(540deg);
+    transform: scale(0);
   }
 }
 
 .emoji-float {
-  animation: emoji-appear 0.8s ease-in-out forwards;
+  animation: emoji-appear 1.5s ease-in-out forwards;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+.overlay-fade-in {
+  animation: fade-in 0.3s ease-in forwards;
+}
+
+.overlay-fade-out {
+  animation: fade-out 0.3s ease-out forwards;
 }
 
