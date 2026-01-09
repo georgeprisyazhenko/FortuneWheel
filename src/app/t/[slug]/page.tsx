@@ -291,7 +291,7 @@ export default function TeamPage({ params }: PageProps) {
           </div>
 
           <div className="border-t border-slate-100 pt-3">
-            <div className="mb-2 grid grid-cols-[1fr_40px_auto] items-center gap-3 px-2">
+            <div className="mb-2 grid grid-cols-[1fr_40px_60px] items-center gap-3 px-2">
               <h3 className="text-base font-semibold">Участники</h3>
               <div className="flex justify-center">
                 <span className="text-xs text-slate-500">Исключить</span>
@@ -302,7 +302,7 @@ export default function TeamPage({ params }: PageProps) {
               {members.map((member) => (
                 <div
                   key={member.id}
-                  className="group grid grid-cols-[1fr_40px_auto] items-center gap-3 rounded border border-slate-100 px-2 py-1.5 hover:bg-slate-50"
+                  className="group grid grid-cols-[1fr_40px_60px] items-center gap-3 rounded border border-slate-100 px-2 py-1.5 hover:bg-slate-50"
                 >
                   <div className="flex flex-col min-w-0">
                     <span className="truncate">{member.name}</span>
@@ -323,7 +323,7 @@ export default function TeamPage({ params }: PageProps) {
                   </div>
                   <button
                     onClick={() => handleDeleteMember(member)}
-                    className="opacity-0 group-hover:opacity-100 transition-opacity text-xs text-red-600 hover:underline"
+                    className="opacity-0 group-hover:opacity-100 transition-opacity text-xs text-red-600 hover:underline text-left"
                   >
                     Удалить
                   </button>
