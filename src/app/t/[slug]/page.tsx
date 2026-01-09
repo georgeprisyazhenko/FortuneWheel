@@ -286,31 +286,34 @@ export default function TeamPage({ params }: PageProps) {
               {members.map((member) => (
                 <div
                   key={member.id}
-                  className="flex items-center justify-between rounded border border-slate-100 px-2 py-1.5"
+                  className="group flex items-center justify-between rounded border border-slate-100 px-2 py-1.5 hover:bg-slate-50"
                 >
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={member.vacation}
-                      onChange={(e) =>
-                        handleToggleVacation(member, e.target.checked)
-                      }
-                    />
-                    <div className="flex flex-col">
-                      <span>{member.name}</span>
-                      {team.last_winner_member_id === member.id && (
-                        <span className="text-[11px] text-amber-600">
-                          Был в прошлый раз
-                        </span>
-                      )}
-                    </div>
+                  <div className="flex flex-col">
+                    <span>{member.name}</span>
+                    {team.last_winner_member_id === member.id && (
+                      <span className="text-[11px] text-amber-600">
+                        Был в прошлый раз
+                      </span>
+                    )}
                   </div>
-                  <button
-                    onClick={() => handleDeleteMember(member)}
-                    className="text-xs text-red-600 hover:underline"
-                  >
-                    Удалить
-                  </button>
+                  <div className="flex items-center gap-3">
+                    <div className="flex flex-col items-center">
+                      <span className="text-xs text-slate-500 mb-1">Исключить</span>
+                      <input
+                        type="checkbox"
+                        checked={member.vacation}
+                        onChange={(e) =>
+                          handleToggleVacation(member, e.target.checked)
+                        }
+                      />
+                    </div>
+                    <button
+                      onClick={() => handleDeleteMember(member)}
+                      className="opacity-0 group-hover:opacity-100 transition-opacity text-xs text-red-600 hover:underline"
+                    >
+                      Удалить
+                    </button>
+                  </div>
                 </div>
               ))}
               {!members.length && (
@@ -456,12 +459,8 @@ function FortuneWheel({
         })}
       </div>
       <div
-        className="absolute"
+        className="absolute -right-2 top-1/2 -translate-y-1/2"
         style={{
-          left: '100%',
-          top: '50%',
-          transform: 'translateY(-50%)',
-          marginLeft: '8px',
           width: 0,
           height: 0,
           borderTop: '16px solid transparent',
