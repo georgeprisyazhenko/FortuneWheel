@@ -436,7 +436,7 @@ function FortuneWheel({
         style={{
           backgroundImage: gradient,
           transform: `rotate(${rotation}deg)`,
-          transition: spinning ? 'transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99)' : 'none',
+          transition: spinning ? 'transform 4s cubic-bezier(0.25, 0.46, 0.45, 0.94)' : 'none',
         }}
       >
         <div className="absolute left-1/2 top-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white" />

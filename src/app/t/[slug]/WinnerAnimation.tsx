@@ -20,14 +20,41 @@ export function WinnerAnimation({ winnerName, onComplete }: WinnerAnimationProps
     setSelectedEmoji(emoji);
 
     // Создаем 20-30 эмоджи сразу с разными задержками для плавного появления
+    // Эмоджи не должны появляться ближе 30px от центра (где текст)
     const count = 20 + Math.floor(Math.random() * 11); // 20-30 штук
-    const newEmojis = Array.from({ length: count }, (_, i) => ({
-      id: i,
-      x: Math.random() * 100, // Процент от ширины экрана
-      y: Math.random() * 100, // Процент от высоты экрана
-      size: 40 + Math.random() * 60, // Размер от 40 до 100px
-      delay: Math.random() * 0.5, // Задержка от 0 до 0.5 секунды для плавного появления
-    }));
+    const centerX = 50; // Центр по X (50%)
+    const centerY = 50; // Центр по Y (50%)
+    const minDistance = 30; // Минимальное расстояние в пикселях
+    // Приблизительно: 1% экрана ≈ viewportWidth/100, для экрана 1920px это ~19px
+    // Для безопасности используем большее значение: 30px ≈ 1.5-2% на среднем экране
+    // Используем 2% как минимальное расстояние от центра
+    const minDistancePercent = 2.5; // Примерно 30px на среднем экране
+    
+    const newEmojis: Array<{ id: number; x: number; y: number; size: number; delay: number }> = [];
+    let attempts = 0;
+    const maxAttempts = count * 10; // Максимум попыток для генерации
+    
+    while (newEmojis.length < count && attempts < maxAttempts) {
+      attempts++;
+      const x = Math.random() * 100;
+      const y = Math.random() * 100;
+      
+      // Проверяем расстояние от центра
+      const distanceX = Math.abs(x - centerX);
+      const distanceY = Math.abs(y - centerY);
+      const distance = Math.sqrt(distanceX * distanceX + distanceY * distanceY);
+      
+      // Если эмоджи достаточно далеко от центра, добавляем его
+      if (distance >= minDistancePercent) {
+        newEmojis.push({
+          id: newEmojis.length,
+          x,
+          y,
+          size: 40 + Math.random() * 60, // Размер от 40 до 100px
+          delay: Math.random() * 0.5, // Задержка от 0 до 0.5 секунды для плавного появления
+        });
+      }
+    }
 
     setEmojis(newEmojis);
 
@@ -50,7 +77,7 @@ export function WinnerAnimation({ winnerName, onComplete }: WinnerAnimationProps
   return (
     <div className={`fixed inset-0 z-50 flex items-center justify-center ${isFadingOut ? 'overlay-fade-out' : 'overlay-fade-in'}`}>
       {/* Затемненный фон (темнее) */}
-      <div className="absolute inset-0 bg-black/70 z-0" />
+      <div className="absolute inset-0 bg-black/75 z-0" />
       
       {/* Эмоджи на заднем плане (за текстом, но поверх затемненного фона) */}
       <div className="absolute inset-0 pointer-events-none z-[5]">
