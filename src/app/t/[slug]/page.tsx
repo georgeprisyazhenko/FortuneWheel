@@ -247,7 +247,7 @@ export default function TeamPage({ params }: PageProps) {
 
           <div className="border-t border-slate-100 pt-3">
             <h3 className="mb-2 text-base font-semibold">Участники</h3>
-            <div className="max-h-[340px] space-y-1 overflow-auto pr-1 text-sm">
+            <div className="space-y-1 text-sm">
               {members.map((member) => (
                 <div
                   key={member.id}
@@ -418,13 +418,13 @@ function FortuneWheel({
         })}
       </div>
       <div
-        className="absolute -top-2"
+        className="absolute -top-1"
         style={{
           width: 0,
           height: 0,
-          borderLeft: '12px solid transparent',
-          borderRight: '12px solid transparent',
-          borderBottom: '20px solid #374151',
+          borderLeft: '16px solid transparent',
+          borderRight: '16px solid transparent',
+          borderTop: '40px solid #5c5b5b',
         }}
       />
       <p className="mt-3 text-sm text-slate-600">
