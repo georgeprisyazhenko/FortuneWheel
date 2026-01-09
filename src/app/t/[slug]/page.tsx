@@ -159,26 +159,36 @@ export default function TeamPage({ params }: PageProps) {
     
     // Находим индекс победителя в массиве wheelMembers (участники на колесе)
     const winnerIdx = wheelMembers.findIndex(m => m.id === selected.id);
-    if (winnerIdx === -1) return;
+    if (winnerIdx === -1) {
+      console.error("Winner not found in wheelMembers", { selected, wheelMembers });
+      return;
+    }
     
     // Вычисляем угол, на который нужно повернуть колесо
     // Указатель справа (90°), биссектриса сектора победителя должна быть справа
     const n = wheelMembers.length;
     const slice = 360 / n;
-    const bisectorAngle = winnerIdx * slice + slice / 2;
+    // Биссектриса сектора победителя в системе координат колеса (0° = top, по часовой стрелке)
+    const bisectorAngleInWheel = winnerIdx * slice + slice / 2;
     
-    // Чтобы биссектриса оказалась справа (на 90°), нужно повернуть колесо так,
-    // чтобы сектор победителя оказался под указателем
-    // Текущее положение колеса (какой угол справа) = (wheelRotation + 90) % 360
-    // Нужное положение = 90 - bisectorAngle
-    const currentAngle = (((wheelRotation + 90) % 360) + 360) % 360;
-    const targetAngle = ((90 - bisectorAngle) % 360 + 360) % 360;
-    let angleToWinner = targetAngle - currentAngle;
-    if (angleToWinner <= 0) angleToWinner += 360;
+    // Нормализуем текущий поворот колеса к 0-360
+    const currentRotationNormalized = ((wheelRotation % 360) + 360) % 360;
+    
+    // Текущее положение биссектрисы сектора победителя (с учетом текущего поворота колеса)
+    const currentBisectorPosition = (bisectorAngleInWheel + currentRotationNormalized) % 360;
+    
+    // Целевое положение биссектрисы - справа (90°)
+    const targetBisectorPosition = 90;
+    
+    // Вычисляем, на какой угол нужно повернуть колесо, чтобы биссектриса оказалась справа
+    let angleToTarget = targetBisectorPosition - currentBisectorPosition;
+    
+    // Нормализуем угол к 0-360
+    if (angleToTarget < 0) angleToTarget += 360;
     
     // Добавляем несколько полных оборотов (5-8) для эффекта вращения
     const fullRotations = 5 + Math.floor(Math.random() * 3);
-    const targetRotation = wheelRotation + fullRotations * 360 + angleToWinner;
+    const targetRotation = wheelRotation + fullRotations * 360 + angleToTarget;
     
     setSpinning(true);
     setWinnerId(null);
@@ -199,7 +209,7 @@ export default function TeamPage({ params }: PageProps) {
         setTeam({ ...team, last_winner_member_id: selected.id });
       }
       setSpinning(false);
-    }, 3000); // Увеличил время для более плавной анимации
+    }, 4000); // 4 секунды анимации (2x медленнее + 1 секунда дольше)
   };
 
   if (loading) {
@@ -281,7 +291,10 @@ export default function TeamPage({ params }: PageProps) {
           </div>
 
           <div className="border-t border-slate-100 pt-3">
-            <h3 className="mb-2 text-base font-semibold">Участники</h3>
+            <div className="mb-2 flex items-center justify-between">
+              <h3 className="text-base font-semibold">Участники</h3>
+              <span className="text-xs text-slate-500">Исключить</span>
+            </div>
             <div className="space-y-1 text-sm">
               {members.map((member) => (
                 <div
@@ -297,16 +310,13 @@ export default function TeamPage({ params }: PageProps) {
                     )}
                   </div>
                   <div className="flex items-center gap-3">
-                    <div className="flex flex-col items-center">
-                      <span className="text-xs text-slate-500 mb-1">Исключить</span>
-                      <input
-                        type="checkbox"
-                        checked={member.vacation}
-                        onChange={(e) =>
-                          handleToggleVacation(member, e.target.checked)
-                        }
-                      />
-                    </div>
+                    <input
+                      type="checkbox"
+                      checked={member.vacation}
+                      onChange={(e) =>
+                        handleToggleVacation(member, e.target.checked)
+                      }
+                    />
                     <button
                       onClick={() => handleDeleteMember(member)}
                       className="opacity-0 group-hover:opacity-100 transition-opacity text-xs text-red-600 hover:underline"
@@ -410,7 +420,7 @@ function FortuneWheel({
         style={{
           backgroundImage: gradient,
           transform: `rotate(${rotation}deg)`,
-          transition: spinning ? 'transform 3s cubic-bezier(0.17, 0.67, 0.12, 0.99)' : 'none',
+          transition: spinning ? 'transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99)' : 'none',
         }}
       >
         <div className="absolute left-1/2 top-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white" />
