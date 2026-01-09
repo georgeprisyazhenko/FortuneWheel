@@ -20,32 +20,39 @@ export function WinnerAnimation({ winnerName, onComplete }: WinnerAnimationProps
     setSelectedEmoji(emoji);
 
     // Создаем 20-30 эмоджи сразу с разными задержками для плавного появления
-    // Эмоджи не должны появляться ближе 30px от центра (где текст)
+    // Эмоджи не должны появляться в зоне текста (центр экрана)
     const count = 20 + Math.floor(Math.random() * 11); // 20-30 штук
     const centerX = 50; // Центр по X (50%)
     const centerY = 50; // Центр по Y (50%)
-    const minDistance = 30; // Минимальное расстояние в пикселях
-    // Приблизительно: 1% экрана ≈ viewportWidth/100, для экрана 1920px это ~19px
-    // Для безопасности используем большее значение: 30px ≈ 1.5-2% на среднем экране
-    // Используем 2% как минимальное расстояние от центра
-    const minDistancePercent = 2.5; // Примерно 30px на среднем экране
+    
+    // Запрещенная зона для текста: примерно 50% ширины и 25% высоты вокруг центра
+    // Это учитывает длину текста "Тебе повезло, [имя]!" и его размер
+    const textZoneWidth = 50; // % ширины экрана
+    const textZoneHeight = 25; // % высоты экрана
     
     const newEmojis: Array<{ id: number; x: number; y: number; size: number; delay: number }> = [];
     let attempts = 0;
-    const maxAttempts = count * 10; // Максимум попыток для генерации
+    const maxAttempts = count * 30; // Максимум попыток для генерации
     
     while (newEmojis.length < count && attempts < maxAttempts) {
       attempts++;
       const x = Math.random() * 100;
       const y = Math.random() * 100;
       
-      // Проверяем расстояние от центра
+      // Проверяем, не попадает ли эмоджи в запрещенную зону текста
       const distanceX = Math.abs(x - centerX);
       const distanceY = Math.abs(y - centerY);
-      const distance = Math.sqrt(distanceX * distanceX + distanceY * distanceY);
       
-      // Если эмоджи достаточно далеко от центра, добавляем его
-      if (distance >= minDistancePercent) {
+      // Также учитываем размер самого эмоджи (максимум 100px)
+      // На среднем экране 100px ≈ 5-7% ширины/высоты
+      const emojiMargin = 7; // Дополнительный отступ для размера эмоджи
+      
+      const isInTextZone = 
+        distanceX < (textZoneWidth / 2 + emojiMargin) &&
+        distanceY < (textZoneHeight / 2 + emojiMargin);
+      
+      // Если эмоджи не в запрещенной зоне, добавляем его
+      if (!isInTextZone) {
         newEmojis.push({
           id: newEmojis.length,
           x,

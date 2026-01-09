@@ -199,9 +199,14 @@ export default function TeamPage({ params }: PageProps) {
     setWheelRotation(targetRotation);
 
     setTimeout(async () => {
-      setWinnerId(selected.id);
-      setWinnerName(selected.name);
-      setShowAnimation(true);
+      setSpinning(false);
+      // Запускаем анимацию через 0.5 сек после остановки колеса
+      setTimeout(() => {
+        setWinnerId(selected.id);
+        setWinnerName(selected.name);
+        setShowAnimation(true);
+      }, 500);
+      
       const { error: updErr } = await supabase
         .from("teams")
         .update({ last_winner_member_id: selected.id })
@@ -212,7 +217,6 @@ export default function TeamPage({ params }: PageProps) {
       } else {
         setTeam({ ...team, last_winner_member_id: selected.id });
       }
-      setSpinning(false);
     }, 4000); // 4 секунды анимации (2x медленнее + 1 секунда дольше)
   };
 
