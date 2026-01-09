@@ -208,10 +208,10 @@ export default function TeamPage({ params }: PageProps) {
         <div className="rounded-xl bg-white p-4 shadow flex flex-col items-center">
           <h3 className="mb-3 text-lg font-semibold">Колесо фортуны</h3>
           <FortuneWheel
-            members={pool}
+            members={members.filter(m => !m.vacation)}
             spinning={spinning}
             winnerId={winnerId}
-            lastWinnerId={team.last_winner_member_id}
+            poolLength={pool.length}
           />
           <button
             onClick={handleSpin}
@@ -317,12 +317,12 @@ function FortuneWheel({
   members,
   spinning,
   winnerId,
-  lastWinnerId,
+  poolLength,
 }: {
   members: Member[];
   spinning: boolean;
   winnerId: string | null;
-  lastWinnerId: string | null;
+  poolLength: number;
 }) {
   const colors = ["#6366f1", "#f59e0b", "#10b981", "#f43f5e", "#06b6d4", "#a855f7", "#ec4899", "#14b8a6", "#8b5cf6", "#f97316"];
   const gradient = useMemo(() => {
@@ -417,20 +417,21 @@ function FortuneWheel({
           );
         })}
       </div>
-      <div className="absolute -top-2 h-8 w-8 rotate-45 rounded bg-amber-500" />
+      <div
+        className="absolute -top-2"
+        style={{
+          width: 0,
+          height: 0,
+          borderLeft: '12px solid transparent',
+          borderRight: '12px solid transparent',
+          borderBottom: '20px solid #374151',
+        }}
+      />
       <p className="mt-3 text-sm text-slate-600">
-        {members.length
-          ? "В пуле: " + members.length
+        {poolLength
+          ? "В пуле: " + poolLength
           : "Добавьте участников, чтобы крутить колесо"}
       </p>
-      {winnerId && (
-        <p className="text-sm text-emerald-700">
-          Победитель: {members.find((m) => m.id === winnerId)?.name}
-        </p>
-      )}
-      {lastWinnerId && (
-        <p className="text-xs text-slate-500">Прошлый победитель исключён из пула</p>
-      )}
     </div>
   );
 }
