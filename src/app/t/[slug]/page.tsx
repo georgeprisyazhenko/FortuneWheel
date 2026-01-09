@@ -293,23 +293,26 @@ export default function TeamPage({ params }: PageProps) {
           <div className="border-t border-slate-100 pt-3">
             <div className="mb-2 flex items-center justify-between">
               <h3 className="text-base font-semibold">Участники</h3>
-              <span className="text-xs text-slate-500">Исключить</span>
+              <div className="flex flex-col items-center">
+                <span className="text-xs text-slate-500 mb-1">Исключить</span>
+                <div className="h-4"></div>
+              </div>
             </div>
             <div className="space-y-1 text-sm">
               {members.map((member) => (
                 <div
                   key={member.id}
-                  className="group flex items-center justify-between rounded border border-slate-100 px-2 py-1.5 hover:bg-slate-50"
+                  className="group flex items-center rounded border border-slate-100 px-2 py-1.5 hover:bg-slate-50"
                 >
-                  <div className="flex flex-col">
-                    <span>{member.name}</span>
+                  <div className="flex flex-col flex-1 min-w-0 mr-[-15px]">
+                    <span className="truncate pr-[15px]">{member.name}</span>
                     {team.last_winner_member_id === member.id && (
                       <span className="text-[11px] text-amber-600">
-                        Был в прошлый раз
+                        Последний победитель
                       </span>
                     )}
                   </div>
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 flex-shrink-0">
                     <input
                       type="checkbox"
                       checked={member.vacation}
