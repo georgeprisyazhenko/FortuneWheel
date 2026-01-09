@@ -123,13 +123,15 @@ export function FortuneWheel({
         })}
       </div>
       <div
-        className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 z-10 pointer-events-none"
+        className="absolute top-1/2 z-10 pointer-events-none"
         style={{
+          right: "-15px",
           width: 0,
           height: 0,
           borderTop: "12px solid transparent",
           borderBottom: "12px solid transparent",
           borderRight: "30px solid #5c5b5b",
+          transform: "translateY(-50%)",
         }}
       />
       <p className="mt-3 text-sm text-slate-600">
