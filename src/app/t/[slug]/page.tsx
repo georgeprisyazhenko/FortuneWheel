@@ -379,9 +379,9 @@ function FortuneWheel({
           // Угол биссектрисы сектора (в CSS: 0° = top, по часовой стрелке)
           const bisectorAngle = idx * slice + slice / 2;
           
-          // Радиус размещения текста (75% от радиуса колеса)
+          // Радиус размещения текста (65% от радиуса колеса)
           const wheelRadius = 256;
-          const radius = wheelRadius * 0.75;
+          const radius = wheelRadius * 0.65;
           
           // Переводим угол из CSS системы (0° = top) в математическую (0° = right)
           const mathAngleRad = (bisectorAngle - 90) * Math.PI / 180;
