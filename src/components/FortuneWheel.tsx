@@ -121,19 +121,18 @@ export function FortuneWheel({
             </div>
           );
         })}
+        <div
+          className="absolute top-1/2 right-0 z-10 pointer-events-none"
+          style={{
+            width: 0,
+            height: 0,
+            borderTop: "12px solid transparent",
+            borderBottom: "12px solid transparent",
+            borderRight: "30px solid #5c5b5b",
+            transform: "translate(50%, -50%)",
+          }}
+        />
       </div>
-      <div
-        className="absolute top-1/2 z-10 pointer-events-none"
-        style={{
-          right: "0",
-          width: 0,
-          height: 0,
-          borderTop: "12px solid transparent",
-          borderBottom: "12px solid transparent",
-          borderRight: "30px solid #5c5b5b",
-          transform: "translateY(-50%)",
-        }}
-      />
       <p className="mt-3 text-sm text-slate-600">
         {poolLength
           ? `В пуле: ${poolLength}`
