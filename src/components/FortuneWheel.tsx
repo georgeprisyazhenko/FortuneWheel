@@ -65,62 +65,64 @@ export function FortuneWheel({
 
   return (
     <div className="relative flex flex-col items-center w-full">
-      <div className="relative w-full max-w-[512px] aspect-square rounded-full border-4 border-white shadow-inner"
-        style={{
-          backgroundImage: gradient,
-          transform: `rotate(${rotation}deg)`,
-          transition: spinning
-            ? "transform 4s cubic-bezier(0.25, 0.46, 0.45, 0.94)"
-            : "none",
-        }}
-      >
-        <div className="absolute left-1/2 top-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white" />
-        {members.map((m, idx) => {
-          const n = members.length;
-          const slice = 360 / n;
+      <div className="relative w-full max-w-[512px]">
+        <div className="relative w-full aspect-square rounded-full border-4 border-white shadow-inner"
+          style={{
+            backgroundImage: gradient,
+            transform: `rotate(${rotation}deg)`,
+            transition: spinning
+              ? "transform 4s cubic-bezier(0.25, 0.46, 0.45, 0.94)"
+              : "none",
+          }}
+        >
+          <div className="absolute left-1/2 top-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white" />
+          {members.map((m, idx) => {
+            const n = members.length;
+            const slice = 360 / n;
 
-          // Угол биссектрисы сектора (в CSS: 0° = top, по часовой стрелке)
-          const bisectorAngle = idx * slice + slice / 2;
+            // Угол биссектрисы сектора (в CSS: 0° = top, по часовой стрелке)
+            const bisectorAngle = idx * slice + slice / 2;
 
-          // Радиус размещения текста (в процентах от размера контейнера)
-          // WHEEL_TEXT_RADIUS_RATIO = 0.65, значит текст на 65% от центра к краю
-          // Это примерно 32.5% от центра контейнера (50% * 0.65)
-          const radiusPercent = 50 * WHEEL_TEXT_RADIUS_RATIO;
+            // Радиус размещения текста (в процентах от размера контейнера)
+            // WHEEL_TEXT_RADIUS_RATIO = 0.65, значит текст на 65% от центра к краю
+            // Это примерно 32.5% от центра контейнера (50% * 0.65)
+            const radiusPercent = 50 * WHEEL_TEXT_RADIUS_RATIO;
 
-          // Переводим угол из CSS системы (0° = top) в математическую (0° = right)
-          const mathAngleRad = ((bisectorAngle - 90) * Math.PI) / 180;
+            // Переводим угол из CSS системы (0° = top) в математическую (0° = right)
+            const mathAngleRad = ((bisectorAngle - 90) * Math.PI) / 180;
 
-          // Координаты точки на биссектрисе (в процентах от размера контейнера)
-          // Используем проценты для адаптивности
-          const xPercent = Math.cos(mathAngleRad) * radiusPercent;
-          const yPercent = Math.sin(mathAngleRad) * radiusPercent;
+            // Координаты точки на биссектрисе (в процентах от размера контейнера)
+            // Используем проценты для адаптивности
+            const xPercent = Math.cos(mathAngleRad) * radiusPercent;
+            const yPercent = Math.sin(mathAngleRad) * radiusPercent;
 
-          // Угол поворота текста для радиального расположения
-          const textRotation = bisectorAngle - 90;
+            // Угол поворота текста для радиального расположения
+            const textRotation = bisectorAngle - 90;
 
-          // Обрезаем имя только если больше максимальной длины
-          const displayName =
-            m.name.length > WHEEL_MAX_NAME_LENGTH
-              ? m.name.slice(0, WHEEL_NAME_TRUNCATE_LENGTH) + "…"
-              : m.name;
+            // Обрезаем имя только если больше максимальной длины
+            const displayName =
+              m.name.length > WHEEL_MAX_NAME_LENGTH
+                ? m.name.slice(0, WHEEL_NAME_TRUNCATE_LENGTH) + "…"
+                : m.name;
 
-          return (
-            <div
-              key={m.id}
-              className="absolute text-xs sm:text-sm font-semibold text-white drop-shadow-lg pointer-events-none"
-              style={{
-                left: `calc(50% + ${xPercent}%)`,
-                top: `calc(50% + ${yPercent}%)`,
-                transform: `translate(-50%, -50%) rotate(${textRotation}deg)`,
-                textAlign: "center",
-                whiteSpace: "nowrap",
-              }}
-              title={m.name}
-            >
-              {displayName}
-            </div>
-          );
-        })}
+            return (
+              <div
+                key={m.id}
+                className="absolute text-xs sm:text-sm font-semibold text-white drop-shadow-lg pointer-events-none"
+                style={{
+                  left: `calc(50% + ${xPercent}%)`,
+                  top: `calc(50% + ${yPercent}%)`,
+                  transform: `translate(-50%, -50%) rotate(${textRotation}deg)`,
+                  textAlign: "center",
+                  whiteSpace: "nowrap",
+                }}
+                title={m.name}
+              >
+                {displayName}
+              </div>
+            );
+          })}
+        </div>
         <div
           className="absolute top-1/2 right-0 z-10 pointer-events-none"
           style={{
