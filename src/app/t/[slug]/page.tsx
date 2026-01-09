@@ -379,48 +379,40 @@ function FortuneWheel({
           // Угол биссектрисы сектора (в CSS: 0° = top, по часовой стрелке)
           const bisectorAngle = idx * slice + slice / 2;
           
-          // Радиус размещения текста: край надписи в 15px от края колеса
+          // Радиус: край надписи в 15px от края колеса
           const wheelRadius = 256;
           const edgeOffset = 15;
           const radius = wheelRadius - edgeOffset;
           
-          // Переводим угол из CSS системы (0° = top) в математическую (0° = right)
-          // CSS 0° = Math -90° (или 270°)
-          // Формула: mathAngle = cssAngle - 90
-          const mathAngleRad = (bisectorAngle - 90) * Math.PI / 180;
-          
-          // Координаты точки на биссектрисе
-          const x = Math.cos(mathAngleRad) * radius;
-          const y = Math.sin(mathAngleRad) * radius;
-          
-          // Угол поворота текста для радиального расположения (вдоль биссектрисы)
-          // bisectorAngle - 90 делает текст направленным вдоль биссектрисы (от центра к краю)
-          // Если получившийся угол в диапазоне (90°, 270°], текст перевёрнут - добавляем 180°
-          const baseRotation = bisectorAngle - 90;
-          const normalizedBase = ((baseRotation % 360) + 360) % 360;
-          const needsFlip = normalizedBase > 90 && normalizedBase <= 270;
-          const textRotation = baseRotation + (needsFlip ? 180 : 0);
+          // Определяем, нужно ли переворачивать текст для читаемости
+          // Нижняя половина колеса: углы от 90° до 270°
+          const needsFlip = bisectorAngle > 90 && bisectorAngle < 270;
           
           // Обрезаем имя только если больше 20 символов
           const displayName = m.name.length > 20 ? m.name.slice(0, 18) + '…' : m.name;
           
-          // Выравнивание текста от края колеса:
-          // Позиция (x, y) - это точка на биссектрисе в 15px от края
-          // Текст должен начинаться (или заканчиваться) в этой точке
-          // 
-          // Для needsFlip=false: левый край текста в точке (x, y), текст идёт к центру
-          // Для needsFlip=true: правый край текста в точке (x, y), текст идёт от центра
+          // Новый подход: позиционируем от центра колеса
+          // 1. Начинаем в центре (left: 50%, top: 50%)
+          // 2. Поворачиваем на угол биссектрисы (rotate)
+          // 3. Сдвигаем вдоль биссектрисы на radius (translateY, т.к. после rotate вверх = вдоль биссектрисы)
+          // 4. Корректируем для читаемости
+          
+          // Для CSS conic-gradient 0° = top, поэтому rotate(bisectorAngle) направит вверх на биссектрису
+          // translateY(-radius) сдвинет вверх (к краю колеса)
+          
+          // Для needsFlip: текст должен быть перевёрнут и выровнен по правому краю
+          const flipRotation = needsFlip ? 180 : 0;
+          const textShift = needsFlip ? 'translateX(-100%)' : '';
           
           return (
             <div
               key={m.id}
               className="absolute text-sm font-semibold text-white drop-shadow-lg pointer-events-none"
               style={{
-                left: `calc(50% + ${x}px)`,
-                top: `calc(50% + ${y}px)`,
-                // Сначала центрируем по вертикали, потом поворачиваем
-                transform: `translateY(-50%) rotate(${textRotation}deg) ${needsFlip ? 'translateX(-100%)' : ''}`,
-                transformOrigin: '0% 50%',
+                left: '50%',
+                top: '50%',
+                transform: `rotate(${bisectorAngle}deg) translateY(-${radius}px) rotate(${flipRotation}deg) ${textShift} translateY(-50%)`,
+                transformOrigin: '0 0',
                 whiteSpace: 'nowrap',
               }}
               title={m.name}
