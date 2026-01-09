@@ -84,7 +84,7 @@ export function WinnerAnimation({ winnerName, onComplete }: WinnerAnimationProps
   return (
     <div className={`fixed inset-0 z-50 flex items-center justify-center ${isFadingOut ? 'overlay-fade-out' : 'overlay-fade-in'}`}>
       {/* Затемненный фон (темнее) */}
-      <div className="absolute inset-0 bg-black/75 z-0" />
+      <div className="absolute inset-0 bg-black/80 z-0" />
       
       {/* Эмоджи на заднем плане (за текстом, но поверх затемненного фона) */}
       <div className="absolute inset-0 pointer-events-none z-[5]">
