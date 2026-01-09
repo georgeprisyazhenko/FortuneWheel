@@ -1,8 +1,19 @@
 "use client";
 
 import { useEffect, useState } from "react";
-
-const EMOJIS = ["👉", "🎉", "🎊", "😎"];
+import {
+  WINNER_EMOJIS,
+  WINNER_ANIMATION_DURATION,
+  WINNER_ANIMATION_FADE_OUT_DELAY,
+  WINNER_EMOJI_COUNT_MIN,
+  WINNER_EMOJI_COUNT_MAX,
+  WINNER_EMOJI_SIZE_MIN,
+  WINNER_EMOJI_SIZE_MAX,
+  WINNER_EMOJI_DELAY_MAX,
+  WINNER_TEXT_ZONE_WIDTH,
+  WINNER_TEXT_ZONE_HEIGHT,
+  WINNER_EMOJI_MARGIN,
+} from "@/constants";
 
 interface WinnerAnimationProps {
   winnerName: string;
@@ -16,49 +27,51 @@ export function WinnerAnimation({ winnerName, onComplete }: WinnerAnimationProps
 
   useEffect(() => {
     // Выбираем один случайный эмоджи для всей анимации
-    const emoji = EMOJIS[Math.floor(Math.random() * EMOJIS.length)];
+    const emoji =
+      WINNER_EMOJIS[Math.floor(Math.random() * WINNER_EMOJIS.length)];
     setSelectedEmoji(emoji);
 
-    // Создаем 20-30 эмоджи сразу с разными задержками для плавного появления
+    // Создаем эмоджи с разными задержками для плавного появления
     // Эмоджи не должны появляться в зоне текста (центр экрана)
-    const count = 20 + Math.floor(Math.random() * 11); // 20-30 штук
+    const count =
+      WINNER_EMOJI_COUNT_MIN +
+      Math.floor(Math.random() * (WINNER_EMOJI_COUNT_MAX - WINNER_EMOJI_COUNT_MIN + 1));
     const centerX = 50; // Центр по X (50%)
     const centerY = 50; // Центр по Y (50%)
-    
-    // Запрещенная зона для текста: примерно 50% ширины и 25% высоты вокруг центра
-    // Это учитывает длину текста "Тебе повезло, [имя]!" и его размер
-    const textZoneWidth = 50; // % ширины экрана
-    const textZoneHeight = 25; // % высоты экрана
-    
-    const newEmojis: Array<{ id: number; x: number; y: number; size: number; delay: number }> = [];
+
+    const newEmojis: Array<{
+      id: number;
+      x: number;
+      y: number;
+      size: number;
+      delay: number;
+    }> = [];
     let attempts = 0;
     const maxAttempts = count * 30; // Максимум попыток для генерации
-    
+
     while (newEmojis.length < count && attempts < maxAttempts) {
       attempts++;
       const x = Math.random() * 100;
       const y = Math.random() * 100;
-      
+
       // Проверяем, не попадает ли эмоджи в запрещенную зону текста
       const distanceX = Math.abs(x - centerX);
       const distanceY = Math.abs(y - centerY);
-      
-      // Также учитываем размер самого эмоджи (максимум 100px)
-      // На среднем экране 100px ≈ 5-7% ширины/высоты
-      const emojiMargin = 7; // Дополнительный отступ для размера эмоджи
-      
-      const isInTextZone = 
-        distanceX < (textZoneWidth / 2 + emojiMargin) &&
-        distanceY < (textZoneHeight / 2 + emojiMargin);
-      
+
+      const isInTextZone =
+        distanceX < WINNER_TEXT_ZONE_WIDTH / 2 + WINNER_EMOJI_MARGIN &&
+        distanceY < WINNER_TEXT_ZONE_HEIGHT / 2 + WINNER_EMOJI_MARGIN;
+
       // Если эмоджи не в запрещенной зоне, добавляем его
       if (!isInTextZone) {
         newEmojis.push({
           id: newEmojis.length,
           x,
           y,
-          size: 40 + Math.random() * 60, // Размер от 40 до 100px
-          delay: Math.random() * 0.5, // Задержка от 0 до 0.5 секунды для плавного появления
+          size:
+            WINNER_EMOJI_SIZE_MIN +
+            Math.random() * (WINNER_EMOJI_SIZE_MAX - WINNER_EMOJI_SIZE_MIN),
+          delay: Math.random() * WINNER_EMOJI_DELAY_MAX,
         });
       }
     }
@@ -68,12 +81,12 @@ export function WinnerAnimation({ winnerName, onComplete }: WinnerAnimationProps
     // Начинаем плавное исчезновение за 0.3 секунды до конца
     const fadeOutTimeout = setTimeout(() => {
       setIsFadingOut(true);
-    }, 1700); // 2000 - 300 = 1700
+    }, WINNER_ANIMATION_FADE_OUT_DELAY);
 
-    // Завершаем анимацию через 2 секунды
+    // Завершаем анимацию
     const completeTimeout = setTimeout(() => {
       onComplete();
-    }, 2000);
+    }, WINNER_ANIMATION_DURATION);
 
     return () => {
       clearTimeout(fadeOutTimeout);

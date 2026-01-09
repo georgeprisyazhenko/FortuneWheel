@@ -1,8 +1,6 @@
-export type Member = {
-  id: string;
-  name: string;
-  vacation: boolean;
-};
+import type { Member } from "@/types";
+
+export type { Member };
 
 export function poolForToday(members: Member[], lastWinnerId: string | null) {
   // Исключаем только участников в отпуске
