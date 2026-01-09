@@ -404,10 +404,12 @@ function FortuneWheel({
           // Обрезаем имя только если больше 20 символов
           const displayName = m.name.length > 20 ? m.name.slice(0, 18) + '…' : m.name;
           
-          // Выравнивание текста от края:
-          // - needsFlip=false (верхняя половина): текст начинается от позиции, идёт к центру
-          // - needsFlip=true (нижняя половина): текст заканчивается в позиции, идёт от центра
-          const translateX = needsFlip ? '-100%' : '0%';
+          // Выравнивание текста от края колеса:
+          // Позиция (x, y) - это точка на биссектрисе в 15px от края
+          // Текст должен начинаться (или заканчиваться) в этой точке
+          // 
+          // Для needsFlip=false: левый край текста в точке (x, y), текст идёт к центру
+          // Для needsFlip=true: правый край текста в точке (x, y), текст идёт от центра
           
           return (
             <div
@@ -416,7 +418,9 @@ function FortuneWheel({
               style={{
                 left: `calc(50% + ${x}px)`,
                 top: `calc(50% + ${y}px)`,
-                transform: `translate(${translateX}, -50%) rotate(${textRotation}deg)`,
+                // Сначала центрируем по вертикали, потом поворачиваем
+                transform: `translateY(-50%) rotate(${textRotation}deg) ${needsFlip ? 'translateX(-100%)' : ''}`,
+                transformOrigin: '0% 50%',
                 whiteSpace: 'nowrap',
               }}
               title={m.name}
