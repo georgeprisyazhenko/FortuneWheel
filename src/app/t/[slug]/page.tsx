@@ -168,8 +168,8 @@ export default function TeamPage({ params }: PageProps) {
   }
 
   return (
-    <main className="flex min-h-screen w-full flex-col gap-4 px-2 py-3 sm:px-3 sm:py-4">
-      <header className="flex items-start justify-between gap-2 w-full">
+    <main className="mx-auto flex min-h-screen w-full max-w-6xl flex-col gap-4 px-2 py-3 sm:px-3 sm:py-4">
+      <header className="flex items-center justify-between gap-2 w-full">
         <div className="flex items-center gap-2 flex-1 min-w-0">
           <span className="text-xl sm:text-2xl font-semibold whitespace-nowrap">Колесо фортуны</span>
           <EditableTitle
@@ -180,13 +180,13 @@ export default function TeamPage({ params }: PageProps) {
         </div>
         <button
           onClick={() => router.push("/")}
-          className="text-xs sm:text-sm text-indigo-600 hover:underline whitespace-nowrap ml-2"
+          className="text-xs sm:text-sm text-indigo-600 hover:underline whitespace-nowrap"
         >
           Создать новую комнату
         </button>
       </header>
 
-      <section className="flex flex-col md:grid md:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] gap-4 w-full">
+      <section className="grid grid-cols-1 md:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] gap-4 w-full">
         <div className="rounded-xl bg-white p-3 sm:p-4 shadow flex flex-col items-center w-full">
           <FortuneWheel
             members={wheelMembers}

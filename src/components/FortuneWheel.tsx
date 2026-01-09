@@ -123,7 +123,7 @@ export function FortuneWheel({
         })}
       </div>
       <div
-        className="absolute right-0 sm:-right-2 top-1/2 -translate-y-1/2"
+        className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 z-10 pointer-events-none"
         style={{
           width: 0,
           height: 0,
