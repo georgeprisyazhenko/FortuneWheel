@@ -23,3 +23,26 @@ body {
   animation: wheel-spin 2.2s ease-out;
 }
 
+@keyframes emoji-appear {
+  0% {
+    opacity: 0;
+    transform: scale(0) rotate(0deg);
+  }
+  20% {
+    opacity: 1;
+    transform: scale(1) rotate(180deg);
+  }
+  80% {
+    opacity: 1;
+    transform: scale(1) rotate(360deg);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0) rotate(540deg);
+  }
+}
+
+.emoji-float {
+  animation: emoji-appear 0.8s ease-in-out forwards;
+}
+

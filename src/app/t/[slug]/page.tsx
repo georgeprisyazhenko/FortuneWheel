@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { poolForToday, pickRandom, Member } from "@/lib/selection";
+import { WinnerAnimation } from "./WinnerAnimation";
 
 export const dynamic = 'force-dynamic';
 
@@ -29,6 +30,8 @@ export default function TeamPage({ params }: PageProps) {
   const [savingName, setSavingName] = useState(false);
   const [spinning, setSpinning] = useState(false);
   const [winnerId, setWinnerId] = useState<string | null>(null);
+  const [winnerName, setWinnerName] = useState<string | null>(null);
+  const [showAnimation, setShowAnimation] = useState(false);
   const [message, setMessage] = useState("");
   const [wheelRotation, setWheelRotation] = useState(0);
 
@@ -197,7 +200,8 @@ export default function TeamPage({ params }: PageProps) {
 
     setTimeout(async () => {
       setWinnerId(selected.id);
-      setMessage(`Тебе повезло, ${selected.name}! 🎉`);
+      setWinnerName(selected.name);
+      setShowAnimation(true);
       const { error: updErr } = await supabase
         .from("teams")
         .update({ last_winner_member_id: selected.id })
@@ -266,6 +270,15 @@ export default function TeamPage({ params }: PageProps) {
             Ему повезёт
           </button>
           {message && <p className="mt-3 text-sm text-emerald-700">{message}</p>}
+          {showAnimation && winnerName && (
+            <WinnerAnimation
+              winnerName={winnerName}
+              onComplete={() => {
+                setShowAnimation(false);
+                setMessage(`Тебе повезло, ${winnerName}! 🎉`);
+              }}
+            />
+          )}
         </div>
 
         <div className="rounded-xl bg-white p-4 shadow flex flex-col gap-4">
