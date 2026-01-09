@@ -162,17 +162,17 @@ export default function TeamPage({ params }: PageProps) {
     if (winnerIdx === -1) return;
     
     // Вычисляем угол, на который нужно повернуть колесо
-    // Указатель сверху (0°), биссектриса сектора победителя должна быть сверху
+    // Указатель справа (90°), биссектриса сектора победителя должна быть справа
     const n = wheelMembers.length;
     const slice = 360 / n;
     const bisectorAngle = winnerIdx * slice + slice / 2;
     
-    // Чтобы биссектриса оказалась сверху (на 0°), нужно повернуть колесо так,
+    // Чтобы биссектриса оказалась справа (на 90°), нужно повернуть колесо так,
     // чтобы сектор победителя оказался под указателем
-    // Текущее положение колеса (какой угол сверху) = wheelRotation % 360
-    // Нужное положение = 360 - bisectorAngle
-    const currentAngle = ((wheelRotation % 360) + 360) % 360;
-    const targetAngle = ((360 - bisectorAngle) % 360 + 360) % 360;
+    // Текущее положение колеса (какой угол справа) = (wheelRotation + 90) % 360
+    // Нужное положение = 90 - bisectorAngle
+    const currentAngle = (((wheelRotation + 90) % 360) + 360) % 360;
+    const targetAngle = ((90 - bisectorAngle) % 360 + 360) % 360;
     let angleToWinner = targetAngle - currentAngle;
     if (angleToWinner <= 0) angleToWinner += 360;
     
@@ -227,7 +227,10 @@ export default function TeamPage({ params }: PageProps) {
   return (
     <main className="mx-auto flex min-h-screen max-w-6xl flex-col gap-4 px-3 py-4">
       <header className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <EditableTitle name={team.name} onSave={handleSaveName} saving={savingName} />
+        <div className="flex items-center gap-2">
+          <span className="text-lg font-semibold">Колесо фортуны</span>
+          <EditableTitle name={team.name} onSave={handleSaveName} saving={savingName} />
+        </div>
         <button
           onClick={() => router.push("/")}
           className="text-sm text-indigo-600 hover:underline"
@@ -238,7 +241,6 @@ export default function TeamPage({ params }: PageProps) {
 
       <section className="grid gap-4 md:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
         <div className="rounded-xl bg-white p-4 shadow flex flex-col items-center">
-          <h3 className="mb-3 text-lg font-semibold">Колесо фортуны</h3>
           <FortuneWheel
             members={wheelMembers}
             spinning={spinning}
@@ -428,10 +430,9 @@ function FortuneWheel({
           const y = Math.sin(mathAngleRad) * radius;
           
           // Угол поворота текста для радиального расположения (вдоль биссектрисы)
-          const baseRotation = bisectorAngle - 90;
-          const normalizedBase = ((baseRotation % 360) + 360) % 360;
-          const needsFlip = normalizedBase > 90 && normalizedBase <= 270;
-          const textRotation = baseRotation + (needsFlip ? 180 : 0);
+          // Первая буква должна быть ближе к центру - все подписи одинаково ориентированы
+          // Текст направлен от центра к краю: угол биссектрисы - 90° (чтобы было радиально)
+          const textRotation = bisectorAngle - 90;
           
           // Обрезаем имя только если больше 20 символов
           const displayName = m.name.length > 20 ? m.name.slice(0, 18) + '…' : m.name;
@@ -455,13 +456,13 @@ function FortuneWheel({
         })}
       </div>
       <div
-        className="absolute -top-1"
+        className="absolute right-0 top-1/2 -translate-y-1/2"
         style={{
           width: 0,
           height: 0,
-          borderLeft: '16px solid transparent',
-          borderRight: '16px solid transparent',
-          borderTop: '40px solid #5c5b5b',
+          borderTop: '16px solid transparent',
+          borderBottom: '16px solid transparent',
+          borderRight: '40px solid #5c5b5b',
         }}
       />
       <p className="mt-3 text-sm text-slate-600">

@@ -12,6 +12,11 @@ describe("poolForToday", () => {
     const pool = poolForToday(members, "1");
     expect(pool.map((m) => m.id)).toEqual(["2"]);
   });
+
+  it("does not exclude anyone when lastWinnerId is null", () => {
+    const pool = poolForToday(members, null);
+    expect(pool.map((m) => m.id)).toEqual(["1", "2"]);
+  });
 });
 
 describe("pickRandom", () => {

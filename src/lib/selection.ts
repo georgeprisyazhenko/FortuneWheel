@@ -5,9 +5,14 @@ export type Member = {
 };
 
 export function poolForToday(members: Member[], lastWinnerId: string | null) {
-  return members.filter(
-    (m) => !m.vacation && (!lastWinnerId || m.id !== lastWinnerId),
-  );
+  return members.filter((m) => {
+    // Исключаем участников в отпуске
+    if (m.vacation) return false;
+    // Если нет прошлого победителя, включаем всех не в отпуске
+    if (!lastWinnerId) return true;
+    // Исключаем прошлого победителя
+    return m.id !== lastWinnerId;
+  });
 }
 
 export function pickRandom<T>(items: T[]): T | null {
