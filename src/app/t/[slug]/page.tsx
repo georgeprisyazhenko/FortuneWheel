@@ -138,8 +138,8 @@ export default function TeamPage({ params }: PageProps) {
   };
 
   const pool = useMemo(
-    () => poolForToday(members, team?.last_winner_member_id ?? null),
-    [members, team?.last_winner_member_id],
+    () => poolForToday(members, null), // lastWinnerId больше не используется - исключаем только по vacation
+    [members],
   );
 
   // Участники на колесе (без отпускных)
@@ -228,7 +228,7 @@ export default function TeamPage({ params }: PageProps) {
     <main className="mx-auto flex min-h-screen max-w-6xl flex-col gap-4 px-3 py-4">
       <header className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div className="flex items-center gap-2">
-          <span className="text-lg font-semibold">Колесо фортуны</span>
+          <span className="text-2xl font-semibold">Колесо фортуны</span>
           <EditableTitle name={team.name} onSave={handleSaveName} saving={savingName} />
         </div>
         <button
@@ -456,8 +456,12 @@ function FortuneWheel({
         })}
       </div>
       <div
-        className="absolute right-0 top-1/2 -translate-y-1/2"
+        className="absolute"
         style={{
+          left: '100%',
+          top: '50%',
+          transform: 'translateY(-50%)',
+          marginLeft: '8px',
           width: 0,
           height: 0,
           borderTop: '16px solid transparent',

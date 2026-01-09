@@ -8,14 +8,14 @@ const members = [
 ];
 
 describe("poolForToday", () => {
-  it("filters vacation and last winner", () => {
-    const pool = poolForToday(members, "1");
-    expect(pool.map((m) => m.id)).toEqual(["2"]);
-  });
-
-  it("does not exclude anyone when lastWinnerId is null", () => {
+  it("filters only vacation members", () => {
     const pool = poolForToday(members, null);
     expect(pool.map((m) => m.id)).toEqual(["1", "2"]);
+  });
+
+  it("includes all non-vacation members regardless of lastWinnerId", () => {
+    const pool = poolForToday(members, "1");
+    expect(pool.map((m) => m.id)).toEqual(["1", "2"]); // lastWinnerId не влияет
   });
 });
 
