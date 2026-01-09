@@ -125,7 +125,7 @@ export function FortuneWheel({
       <div
         className="absolute top-1/2 z-10 pointer-events-none"
         style={{
-          right: "-15px",
+          right: "0",
           width: 0,
           height: 0,
           borderTop: "12px solid transparent",
