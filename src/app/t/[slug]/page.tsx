@@ -199,7 +199,7 @@ export default function TeamPage({ params }: PageProps) {
         setTeam({ ...team, last_winner_member_id: selected.id });
       }
       setSpinning(false);
-    }, 3000); // Увеличил время для более плавной анимации
+    }, 4000); // 4 секунды анимации
   };
 
   if (loading) {
@@ -400,38 +400,44 @@ function FortuneWheel({
 
   return (
     <div className="relative flex flex-col items-center">
+      {/* Вращающееся колесо (только секторы) */}
       <div
         className="relative h-128 w-128 rounded-full border-4 border-white shadow-inner"
         style={{
           backgroundImage: gradient,
           transform: `rotate(${rotation}deg)`,
-          transition: spinning ? 'transform 3s cubic-bezier(0.17, 0.67, 0.12, 0.99)' : 'none',
+          transition: spinning ? 'transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99)' : 'none',
         }}
       >
         <div className="absolute left-1/2 top-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white" />
+      </div>
+      
+      {/* Подписи - не вращаются, всегда читаемы */}
+      <div className="absolute h-128 w-128 pointer-events-none">
         {members.map((m, idx) => {
           const n = members.length;
           const slice = 360 / n;
           
-          // Угол биссектрисы сектора (в CSS: 0° = top, по часовой стрелке)
+          // Угол биссектрисы с учётом вращения колеса
           const bisectorAngle = idx * slice + slice / 2;
+          const currentAngle = bisectorAngle + rotation;
           
           // Радиус размещения текста (65% от радиуса колеса)
           const wheelRadius = 256;
           const radius = wheelRadius * 0.65;
           
           // Переводим угол из CSS системы (0° = top) в математическую (0° = right)
-          const mathAngleRad = (bisectorAngle - 90) * Math.PI / 180;
+          const mathAngleRad = (currentAngle - 90) * Math.PI / 180;
           
           // Координаты точки на биссектрисе
           const x = Math.cos(mathAngleRad) * radius;
           const y = Math.sin(mathAngleRad) * radius;
           
           // Угол поворота текста для радиального расположения (вдоль биссектрисы)
-          const baseRotation = bisectorAngle - 90;
-          const normalizedBase = ((baseRotation % 360) + 360) % 360;
-          const needsFlip = normalizedBase > 90 && normalizedBase <= 270;
-          const textRotation = baseRotation + (needsFlip ? 180 : 0);
+          // Нормализуем текущий угол для определения читаемости
+          const normalizedAngle = (((currentAngle - 90) % 360) + 360) % 360;
+          const needsFlip = normalizedAngle > 90 && normalizedAngle <= 270;
+          const textRotation = (currentAngle - 90) + (needsFlip ? 180 : 0);
           
           // Обрезаем имя только если больше 20 символов
           const displayName = m.name.length > 20 ? m.name.slice(0, 18) + '…' : m.name;
@@ -439,13 +445,14 @@ function FortuneWheel({
           return (
             <div
               key={m.id}
-              className="absolute text-sm font-semibold text-white drop-shadow-lg pointer-events-none"
+              className="absolute text-sm font-semibold text-white drop-shadow-lg"
               style={{
                 left: `calc(50% + ${x}px)`,
                 top: `calc(50% + ${y}px)`,
                 transform: `translate(-50%, -50%) rotate(${textRotation}deg)`,
                 textAlign: 'center',
                 whiteSpace: 'nowrap',
+                transition: spinning ? 'left 4s cubic-bezier(0.17, 0.67, 0.12, 0.99), top 4s cubic-bezier(0.17, 0.67, 0.12, 0.99), transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99)' : 'none',
               }}
               title={m.name}
             >
